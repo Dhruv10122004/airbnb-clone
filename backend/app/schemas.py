@@ -15,7 +15,7 @@ class UserCreate(UserBase):
 
 class UserResponse(UserBase):
     id: str
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -55,7 +55,7 @@ class ReviewResponse(BaseModel):
     rating_location: int
     rating_value: int
     comment: str
-    created_at: datetime
+    created_at: Optional[datetime] = None
     author: UserResponse
 
     class Config:
@@ -138,8 +138,8 @@ class ListingDetail(ListingBase):
     average_rating: float = 5.0
     review_count: int = 0
     booked_dates: List[BookedDateRange] = []
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
