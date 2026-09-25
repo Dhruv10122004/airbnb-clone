@@ -86,11 +86,11 @@ export default function Navbar({
         {/* Center: Tab row (top of page) OR compact pill (scrolled) */}
         {!scrolled ? (
           /* Full tab row — with exact authentic icons from original site */
-          <div className="hidden md:flex items-center gap-7 h-full">
+          <div className="hidden md:flex items-center gap-8 h-full">
             {/* All */}
             <button
               onClick={() => handleTabClick("all")}
-              className={`flex items-center gap-2.5 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
+              className={`flex items-center gap-3 h-full px-2 text-[15px] transition-colors cursor-pointer border-b-[3px] ${
                 activeNavTab === "all"
                   ? "border-black font-semibold text-black"
                   : "border-transparent text-[#717171] hover:text-black font-medium"
@@ -99,7 +99,7 @@ export default function Navbar({
               <img
                 src="/icons/nav_all.png"
                 alt="All"
-                className="w-6 h-6 object-contain flex-shrink-0"
+                className="w-[34px] h-[34px] object-contain flex-shrink-0"
               />
               <span>All</span>
             </button>
@@ -107,7 +107,7 @@ export default function Navbar({
             {/* Homes */}
             <button
               onClick={() => handleTabClick("homes")}
-              className={`flex items-center gap-2.5 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
+              className={`flex items-center gap-3 h-full px-2 text-[15px] transition-colors cursor-pointer border-b-[3px] ${
                 activeNavTab === "homes"
                   ? "border-black font-semibold text-black"
                   : "border-transparent text-[#717171] hover:text-black font-medium"
@@ -116,7 +116,7 @@ export default function Navbar({
               <img
                 src="/icons/nav_homes.png"
                 alt="Homes"
-                className="w-[28px] h-[22px] object-contain flex-shrink-0"
+                className="w-[42px] h-[30px] object-contain flex-shrink-0"
               />
               <span>Homes</span>
             </button>
@@ -124,7 +124,7 @@ export default function Navbar({
             {/* Experiences */}
             <button
               onClick={() => handleTabClick("experiences")}
-              className={`flex items-center gap-2.5 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
+              className={`flex items-center gap-3 h-full px-2 text-[15px] transition-colors cursor-pointer border-b-[3px] ${
                 activeNavTab === "experiences"
                   ? "border-black font-semibold text-black"
                   : "border-transparent text-[#717171] hover:text-black font-medium"
@@ -133,7 +133,7 @@ export default function Navbar({
               <img
                 src="/icons/nav_experiences.png"
                 alt="Experiences"
-                className="w-[18px] h-[24px] object-contain flex-shrink-0"
+                className="w-[26px] h-[34px] object-contain flex-shrink-0"
               />
               <span>Experiences</span>
             </button>
@@ -141,7 +141,7 @@ export default function Navbar({
             {/* Services */}
             <button
               onClick={() => handleTabClick("services")}
-              className={`flex items-center gap-2.5 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
+              className={`flex items-center gap-3 h-full px-2 text-[15px] transition-colors cursor-pointer border-b-[3px] ${
                 activeNavTab === "services"
                   ? "border-black font-semibold text-black"
                   : "border-transparent text-[#717171] hover:text-black font-medium"
@@ -150,7 +150,7 @@ export default function Navbar({
               <img
                 src="/icons/nav_services.png"
                 alt="Services"
-                className="w-[26px] h-[22px] object-contain flex-shrink-0"
+                className="w-[36px] h-[28px] object-contain flex-shrink-0"
               />
               <span>Services</span>
             </button>
@@ -163,7 +163,7 @@ export default function Navbar({
                 <img
                   src="/icons/nav_homes.png"
                   alt="Homes"
-                  className="w-5 h-4 object-contain"
+                  className="w-6 h-5 object-contain"
                 />
                 <span className="text-[13px] font-semibold text-[#222222]">Anywhere</span>
               </span>
