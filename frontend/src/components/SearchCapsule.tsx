@@ -317,7 +317,7 @@ export default function SearchCapsule({
     return (
       <div className="w-full flex justify-center py-2 relative z-20">
         <div className="flex items-center rounded-full transition-all duration-200 bg-white border border-[#DDDDDD] shadow-[0_1px_2px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-md px-4 py-2 gap-3 cursor-pointer">
-          <span className="text-xl select-none pl-1">🛎️</span>
+          <img src="/icons/nav_services.png" alt="Services" className="w-5 h-4 object-contain ml-1" />
           <div className="flex items-center gap-4 text-sm">
             <span className="font-semibold text-[#222222]">
               {selectedServiceCategory ? "Services in Gurugram" : "Anywhere"}

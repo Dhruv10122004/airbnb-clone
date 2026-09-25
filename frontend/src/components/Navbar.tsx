@@ -85,73 +85,73 @@ export default function Navbar({
 
         {/* Center: Tab row (top of page) OR compact pill (scrolled) */}
         {!scrolled ? (
-          /* Full tab row — only shown at top with authentic flat/duotone icons */
+          /* Full tab row — with exact authentic icons from original site */
           <div className="hidden md:flex items-center gap-7 h-full">
             {/* All */}
             <button
               onClick={() => handleTabClick("all")}
-              className={`flex items-center gap-2 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
+              className={`flex items-center gap-2.5 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
                 activeNavTab === "all"
                   ? "border-black font-semibold text-black"
                   : "border-transparent text-[#717171] hover:text-black font-medium"
               }`}
             >
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="9.5" className="fill-[#F0F4F8] stroke-[#64748B]" strokeWidth="1.5" />
-                <path d="M2.5 12h19" stroke="#64748B" strokeWidth="1.5" strokeLinecap="round" />
-                <ellipse cx="12" cy="12" rx="4.5" ry="9.5" stroke="#64748B" strokeWidth="1.5" />
-              </svg>
+              <img
+                src="/icons/nav_all.png"
+                alt="All"
+                className="w-6 h-6 object-contain flex-shrink-0"
+              />
               <span>All</span>
             </button>
 
             {/* Homes */}
             <button
               onClick={() => handleTabClick("homes")}
-              className={`flex items-center gap-2 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
+              className={`flex items-center gap-2.5 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
                 activeNavTab === "homes"
                   ? "border-black font-semibold text-black"
                   : "border-transparent text-[#717171] hover:text-black font-medium"
               }`}
             >
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 10.5L12 3l9 7.5v9.5a1 1 0 0 1-1 1h-4.5v-6h-7v6H4a1 1 0 0 1-1-1v-9.5z" className="fill-[#F1F5F9] stroke-[#334155]" strokeWidth="1.5" strokeLinejoin="round" />
-                <path d="M19 7v-3h-2.5v1" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
-                <path d="M9.5 21v-5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5" className="fill-[#CBD5E1] stroke-[#334155]" strokeWidth="1.5" />
-              </svg>
+              <img
+                src="/icons/nav_homes.png"
+                alt="Homes"
+                className="w-[28px] h-[22px] object-contain flex-shrink-0"
+              />
               <span>Homes</span>
             </button>
 
             {/* Experiences */}
             <button
               onClick={() => handleTabClick("experiences")}
-              className={`flex items-center gap-2 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
+              className={`flex items-center gap-2.5 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
                 activeNavTab === "experiences"
                   ? "border-black font-semibold text-black"
                   : "border-transparent text-[#717171] hover:text-black font-medium"
               }`}
             >
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C7.5 2 4 5.5 4 10c0 3.5 2.5 6.5 5 9l1.5 2h3l1.5-2c2.5-2.5 5-5.5 5-9 0-4.5-3.5-8-8-8z" className="fill-[#FFF1F2] stroke-[#E11D48]" strokeWidth="1.5" strokeLinejoin="round" />
-                <path d="M8.5 7.5c2 4 5 4 7 0M9 13.5c1.5 2 4.5 2 6 0" stroke="#E11D48" strokeWidth="1.4" strokeLinecap="round" />
-                <path d="M10.5 23h3" stroke="#E11D48" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+              <img
+                src="/icons/nav_experiences.png"
+                alt="Experiences"
+                className="w-[18px] h-[24px] object-contain flex-shrink-0"
+              />
               <span>Experiences</span>
             </button>
 
             {/* Services */}
             <button
               onClick={() => handleTabClick("services")}
-              className={`flex items-center gap-2 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
+              className={`flex items-center gap-2.5 h-full px-1 text-[14px] transition-colors cursor-pointer border-b-[2.5px] ${
                 activeNavTab === "services"
                   ? "border-black font-semibold text-black"
                   : "border-transparent text-[#717171] hover:text-black font-medium"
               }`}
             >
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4v2m0 0a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8z" className="fill-[#FEF3C7] stroke-[#B45309]" strokeWidth="1.5" strokeLinejoin="round" />
-                <path d="M2 18h20v2H2v-2z" className="fill-[#CBD5E1] stroke-[#334155]" strokeWidth="1.5" strokeLinejoin="round" />
-                <circle cx="12" cy="3.5" r="1.5" className="fill-[#B45309]" />
-              </svg>
+              <img
+                src="/icons/nav_services.png"
+                alt="Services"
+                className="w-[26px] h-[22px] object-contain flex-shrink-0"
+              />
               <span>Services</span>
             </button>
           </div>
@@ -160,6 +160,11 @@ export default function Navbar({
           <div className="hidden md:flex flex-1 justify-center px-6">
             <button className="flex items-center gap-0 border border-[#DDDDDD] rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.08),0_3px_12px_rgba(0,0,0,0.08)] hover:shadow-md transition-shadow duration-200 bg-white text-sm font-medium text-[#222222]">
               <span className="flex items-center gap-2 px-4 py-2.5 border-r border-[#EBEBEB]">
+                <img
+                  src="/icons/nav_homes.png"
+                  alt="Homes"
+                  className="w-5 h-4 object-contain"
+                />
                 <span className="text-[13px] font-semibold text-[#222222]">Anywhere</span>
               </span>
               <span className="px-4 py-2.5 border-r border-[#EBEBEB] text-[13px] font-semibold text-[#222222]">Anytime</span>
