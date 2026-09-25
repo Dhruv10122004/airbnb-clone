@@ -77,14 +77,14 @@ The following features are intentionally mocked or stubbed for the purposes of t
 
 ### 1. Clone the repository
 
-`ash
+`
 git clone https://github.com/Dhruv10122004/airbnb-clone.git
 cd airbnb-clone
 `
 
 ### 2. Backend setup
 
-`ash
+`
 cd backend
 
 # Create and activate a virtual environment
@@ -112,7 +112,7 @@ The SQLite database file airbnb.db is created automatically in the backend/ dire
 
 Open a second terminal:
 
-`ash
+`
 cd frontend
 
 # Install dependencies
