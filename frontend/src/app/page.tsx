@@ -42,6 +42,23 @@ export default function HomePage() {
   const [isPromoOpen, setIsPromoOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  // Category and advanced filters state
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [activeFilters, setActiveFilters] = useState<{
+    min_price?: number;
+    max_price?: number;
+    property_type?: string;
+    amenities?: string;
+  }>({});
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 12;
+
+  const filterCount =
+    (activeFilters.min_price ? 1 : 0) +
+    (activeFilters.max_price ? 1 : 0) +
+    (activeFilters.property_type && activeFilters.property_type !== "All" ? 1 : 0) +
+    (activeFilters.amenities ? activeFilters.amenities.split(",").filter(Boolean).length : 0);
+
   // Synchronize active tab with URL query parameter (?tab=...) and browser history
   useEffect(() => {
     const handleUrlTab = () => {
@@ -87,10 +104,18 @@ export default function HomePage() {
 
       const [allListings, wishIds] = await Promise.allSettled([
         fetchListings({
+          category: selectedCategory !== "all" ? selectedCategory : undefined,
           destination: searchParams.destination,
           check_in: searchParams.checkIn,
           check_out: searchParams.checkOut,
           guests: searchParams.guests,
+          min_price: activeFilters.min_price,
+          max_price: activeFilters.max_price,
+          property_type:
+            activeFilters.property_type && activeFilters.property_type !== "All"
+              ? activeFilters.property_type
+              : undefined,
+          amenities: activeFilters.amenities,
         }),
         fetchWishlistIds(),
       ]);
@@ -110,8 +135,9 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    setCurrentPage(1);
     loadData();
-  }, [searchParams]);
+  }, [searchParams, selectedCategory, activeFilters]);
 
   const handleToggleWishlist = async (listingId: string) => {
     try {
@@ -355,7 +381,7 @@ export default function HomePage() {
         onSelectNavTab={setActiveNavTab}
       />
 
-      {/* 2. Search Capsule (frame_027s.jpg / frame_033s.jpg) */}
+      {/* 2. Search Capsule */}
       <div className="bg-white py-4 px-4 flex justify-center">
         <SearchCapsule
           onSearch={setSearchParams}
@@ -365,116 +391,363 @@ export default function HomePage() {
         />
       </div>
 
-      {/* 
-        3. Main Content: NO old category bar!
-        Matches frame_027s.jpg directly into section headers!
-      */}
-      <main className="max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-16 pt-2 pb-16 flex-1 w-full">
+      {/* 3. Main Content */}
+      <main className="max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-16 pt-6 pb-16 flex-1 w-full">
 
         {/* ======================================================== */}
-        {/* VIEW 1: HOMES or ALL (Default - frame_027s.jpg)           */}
+        {/* VIEW 1: HOMES or ALL (Default or Filtered)               */}
         {/* ======================================================== */}
         {(activeNavTab === "homes" || activeNavTab === "all") && (
           <div className="space-y-12">
-
-            {/* Section 1: Popular homes in Noida -> (frame_027s.jpg) */}
-            <div>
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2 group cursor-pointer">
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
-                    Popular homes in Noida
-                  </h2>
-                  <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
-                </div>
-
-                {/* Navigation Chevrons on far right (frame_027s.jpg) */}
-                <div className="flex items-center gap-2">
-                  <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-gray-400 hover:text-black transition cursor-pointer">
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-black transition cursor-pointer">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* 6 Cards per row on desktop (frame_027s.jpg) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
-                {noidaHomes.map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={listing}
-                    isWishlisted={wishlistIds.includes(listing.id)}
-                    onToggleWishlist={handleToggleWishlist}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Section 2: Available in Gurgaon District this weekend -> (frame_027s.jpg) */}
-            <div>
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2 group cursor-pointer">
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
-                    Available in Gurgaon District this weekend
-                  </h2>
-                  <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-gray-400 hover:text-black transition cursor-pointer">
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-black transition cursor-pointer">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
-                {gurgaonHomes.map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={listing}
-                    isWishlisted={wishlistIds.includes(listing.id)}
-                    onToggleWishlist={handleToggleWishlist}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Section 3: Iconic Stays & Escapes */}
-            {otherHomes.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-2 group cursor-pointer">
+            {Boolean(
+              searchParams.destination ||
+              searchParams.checkIn ||
+              searchParams.checkOut ||
+              searchParams.guests ||
+              selectedCategory !== "all" ||
+              activeFilters.min_price ||
+              activeFilters.max_price ||
+              (activeFilters.property_type && activeFilters.property_type !== "All") ||
+              activeFilters.amenities
+            ) ? (
+              /* DYNAMIC SEARCH & FILTER RESULTS VIEW */
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
-                      Iconic Stays & Vacation Escapes
+                      {searchParams.destination
+                        ? `Stays in ${searchParams.destination}`
+                        : selectedCategory !== "all"
+                        ? `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1).replace("_", " ")} stays`
+                        : "Filtered Stays"}
                     </h2>
-                    <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
+                    <p className="text-sm text-[#717171] mt-1">
+                      {listings.filter(isHomeListing).length}{" "}
+                      {listings.filter(isHomeListing).length === 1 ? "stay" : "stays"} found
+                      {searchParams.guests ? ` · ${searchParams.guests} guests` : ""}
+                      {searchParams.checkIn && searchParams.checkOut
+                        ? ` · ${searchParams.checkIn} to ${searchParams.checkOut}`
+                        : ""}
+                    </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-gray-400 hover:text-black transition cursor-pointer">
-                      <ChevronLeft className="w-4 h-4" />
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setIsFilterOpen(true)}
+                      className="flex items-center gap-1.5 py-1.5 px-3 border border-gray-300 rounded-full hover:border-black transition text-xs font-semibold text-[#222222] cursor-pointer bg-white"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5" />
+                      <span>Filters</span>
+                      {filterCount > 0 && (
+                        <span className="w-4 h-4 rounded-full bg-black text-white text-[10px] flex items-center justify-center">
+                          {filterCount}
+                        </span>
+                      )}
                     </button>
-                    <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-black transition cursor-pointer">
-                      <ChevronRight className="w-4 h-4" />
+                    <button
+                      onClick={() => {
+                        setSearchParams({});
+                        setSelectedCategory("all");
+                        setActiveFilters({});
+                      }}
+                      className="text-xs font-semibold underline text-[#222222] hover:text-[#717171] cursor-pointer"
+                    >
+                      Clear all filters
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
-                  {otherHomes.map((listing) => (
-                    <ListingCard
-                      key={listing.id}
-                      listing={listing}
-                      isWishlisted={wishlistIds.includes(listing.id)}
-                      onToggleWishlist={handleToggleWishlist}
-                    />
-                  ))}
-                </div>
+                {listings.filter(isHomeListing).length === 0 ? (
+                  <div className="py-16 text-center flex flex-col items-center justify-center space-y-3 bg-neutral-50 rounded-3xl border border-dashed border-gray-200">
+                    <p className="text-lg font-semibold text-[#222222]">No stays found</p>
+                    <p className="text-sm text-[#717171] max-w-md">
+                      Try adjusting or clearing your filters, price range, or destination to see available stays.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSearchParams({});
+                        setSelectedCategory("all");
+                        setActiveFilters({});
+                      }}
+                      className="mt-2 px-5 py-2.5 rounded-xl bg-black text-white text-xs font-semibold hover:bg-neutral-800 transition"
+                    >
+                      Reset filters
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                      {listings
+                        .filter(isHomeListing)
+                        .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                        .map((listing) => (
+                          <ListingCard
+                            key={listing.id}
+                            listing={listing}
+                            isWishlisted={wishlistIds.includes(listing.id)}
+                            onToggleWishlist={handleToggleWishlist}
+                          />
+                        ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {Math.ceil(listings.filter(isHomeListing).length / pageSize) > 1 && (
+                      <div className="flex flex-col items-center justify-center pt-8 pb-4 gap-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            disabled={currentPage === 1}
+                            onClick={() => {
+                              setCurrentPage((p) => Math.max(1, p - 1));
+                              window.scrollTo({ top: 300, behavior: "smooth" });
+                            }}
+                            className="px-4 py-2 border border-gray-300 rounded-full text-xs font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:border-black transition"
+                          >
+                            Previous
+                          </button>
+                          {Array.from({
+                            length: Math.ceil(listings.filter(isHomeListing).length / pageSize),
+                          }).map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                setCurrentPage(i + 1);
+                                window.scrollTo({ top: 300, behavior: "smooth" });
+                              }}
+                              className={`w-8 h-8 rounded-full text-xs font-semibold transition ${
+                                currentPage === i + 1
+                                  ? "bg-black text-white"
+                                  : "hover:bg-gray-100 text-[#222222]"
+                              }`}
+                            >
+                              {i + 1}
+                            </button>
+                          ))}
+                          <button
+                            disabled={
+                              currentPage === Math.ceil(listings.filter(isHomeListing).length / pageSize)
+                            }
+                            onClick={() => {
+                              setCurrentPage((p) =>
+                                Math.min(
+                                  Math.ceil(listings.filter(isHomeListing).length / pageSize),
+                                  p + 1
+                                )
+                              );
+                              window.scrollTo({ top: 300, behavior: "smooth" });
+                            }}
+                            className="px-4 py-2 border border-gray-300 rounded-full text-xs font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:border-black transition"
+                          >
+                            Next
+                          </button>
+                        </div>
+                        <p className="text-xs text-[#717171]">
+                          Showing {(currentPage - 1) * pageSize + 1} –{" "}
+                          {Math.min(currentPage * pageSize, listings.filter(isHomeListing).length)} of{" "}
+                          {listings.filter(isHomeListing).length} stays
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
+            ) : (
+              /* DEFAULT CURATED SECTIONS VIEW */
+              <>
+                {/* Section 1: Popular homes in Noida */}
+                {noidaHomes.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-2 group cursor-pointer">
+                        <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
+                          Popular homes in Noida
+                        </h2>
+                        <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
+                      </div>
+
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          onClick={() => setIsFilterOpen(true)}
+                          className="flex items-center gap-1.5 py-1.5 px-3 border border-gray-300 rounded-full hover:border-black transition text-xs font-semibold text-[#222222] cursor-pointer bg-white"
+                        >
+                          <SlidersHorizontal className="w-3.5 h-3.5" />
+                          <span>Filters</span>
+                          {filterCount > 0 && (
+                            <span className="w-4 h-4 rounded-full bg-black text-white text-[10px] flex items-center justify-center">
+                              {filterCount}
+                            </span>
+                          )}
+                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-gray-400 hover:text-black transition cursor-pointer">
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+                          <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-black transition cursor-pointer">
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                      {noidaHomes.map((listing) => (
+                        <ListingCard
+                          key={listing.id}
+                          listing={listing}
+                          isWishlisted={wishlistIds.includes(listing.id)}
+                          onToggleWishlist={handleToggleWishlist}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 2: Available in Gurgaon District this weekend */}
+                {gurgaonHomes.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-2 group cursor-pointer">
+                        <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
+                          Available in Gurgaon District this weekend
+                        </h2>
+                        <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-gray-400 hover:text-black transition cursor-pointer">
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-black transition cursor-pointer">
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                      {gurgaonHomes.map((listing) => (
+                        <ListingCard
+                          key={listing.id}
+                          listing={listing}
+                          isWishlisted={wishlistIds.includes(listing.id)}
+                          onToggleWishlist={handleToggleWishlist}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 3: Iconic Stays & Escapes */}
+                {otherHomes.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-2 group cursor-pointer">
+                        <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
+                          Iconic Stays & Vacation Escapes
+                        </h2>
+                        <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-gray-400 hover:text-black transition cursor-pointer">
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-black transition cursor-pointer">
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                      {otherHomes.map((listing) => (
+                        <ListingCard
+                          key={listing.id}
+                          listing={listing}
+                          isWishlisted={wishlistIds.includes(listing.id)}
+                          onToggleWishlist={handleToggleWishlist}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* All Stays Paginated Grid */}
+                {listings.filter(isHomeListing).length > 0 && (
+                  <div className="pt-6 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-5">
+                      <div>
+                        <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
+                          All Stays & Vacation Rentals
+                        </h2>
+                        <p className="text-xs text-[#717171] mt-0.5">Explore our full verified catalog</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                      {listings
+                        .filter(isHomeListing)
+                        .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                        .map((listing) => (
+                          <ListingCard
+                            key={`all_${listing.id}`}
+                            listing={listing}
+                            isWishlisted={wishlistIds.includes(listing.id)}
+                            onToggleWishlist={handleToggleWishlist}
+                          />
+                        ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {Math.ceil(listings.filter(isHomeListing).length / pageSize) > 1 && (
+                      <div className="flex flex-col items-center justify-center pt-8 pb-4 gap-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            className="px-4 py-2 border border-gray-300 rounded-full text-xs font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:border-black transition"
+                          >
+                            Previous
+                          </button>
+                          {Array.from({
+                            length: Math.ceil(listings.filter(isHomeListing).length / pageSize),
+                          }).map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setCurrentPage(i + 1)}
+                              className={`w-8 h-8 rounded-full text-xs font-semibold transition ${
+                                currentPage === i + 1
+                                  ? "bg-black text-white"
+                                  : "hover:bg-gray-100 text-[#222222]"
+                              }`}
+                            >
+                              {i + 1}
+                            </button>
+                          ))}
+                          <button
+                            disabled={
+                              currentPage === Math.ceil(listings.filter(isHomeListing).length / pageSize)
+                            }
+                            onClick={() =>
+                              setCurrentPage((p) =>
+                                Math.min(
+                                  Math.ceil(listings.filter(isHomeListing).length / pageSize),
+                                  p + 1
+                                )
+                              )
+                            }
+                            className="px-4 py-2 border border-gray-300 rounded-full text-xs font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:border-black transition"
+                          >
+                            Next
+                          </button>
+                        </div>
+                        <p className="text-xs text-[#717171]">
+                          Showing {(currentPage - 1) * pageSize + 1} –{" "}
+                          {Math.min(currentPage * pageSize, listings.filter(isHomeListing).length)} of{" "}
+                          {listings.filter(isHomeListing).length} stays
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
 
             {/* If in ALL tab: also show Experiences & Photography sections underneath */}
@@ -977,17 +1250,9 @@ export default function HomePage() {
       <FilterModal
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
+        initialFilters={activeFilters}
         onApply={(filters) => {
-          fetchListings({
-            destination: searchParams.destination,
-            check_in: searchParams.checkIn,
-            check_out: searchParams.checkOut,
-            guests: searchParams.guests,
-            min_price: filters.min_price,
-            max_price: filters.max_price,
-            property_type: filters.property_type,
-            amenities: filters.amenities,
-          }).then((res) => setListings(res));
+          setActiveFilters(filters);
         }}
       />
 

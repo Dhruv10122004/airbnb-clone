@@ -32,6 +32,8 @@ export async function fetchListings(params?: {
   check_in?: string;
   check_out?: string;
   amenities?: string;
+  limit?: number;
+  offset?: number;
 }): Promise<ListingSummary[]> {
   const query = new URLSearchParams();
   if (params?.category && params.category !== "all") query.set("category", params.category);
@@ -43,6 +45,8 @@ export async function fetchListings(params?: {
   if (params?.check_in) query.set("check_in", params.check_in);
   if (params?.check_out) query.set("check_out", params.check_out);
   if (params?.amenities) query.set("amenities", params.amenities);
+  if (params?.limit) query.set("limit", params.limit.toString());
+  if (params?.offset !== undefined) query.set("offset", params.offset.toString());
 
   const res = await fetch(`${API_BASE}/api/listings?${query.toString()}`, {
     headers: getHeaders(),

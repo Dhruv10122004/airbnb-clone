@@ -8,13 +8,15 @@ import { fetchDemoUsers, loginUser } from "@/lib/api";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUserLoggedIn: (user: User) => void;
+  onUserLoggedIn?: (user: User) => void;
+  onSuccess?: () => void;
 }
 
 export default function AuthModal({
   isOpen,
   onClose,
   onUserLoggedIn,
+  onSuccess,
 }: AuthModalProps) {
   const [email, setEmail] = useState("");
   const [demoUsers, setDemoUsers] = useState<User[]>([]);
@@ -46,7 +48,8 @@ export default function AuthModal({
     setLoading(true);
     try {
       const user = await loginUser(email.trim());
-      onUserLoggedIn(user);
+      if (onUserLoggedIn) onUserLoggedIn(user);
+      if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
       console.error(err);
@@ -57,7 +60,8 @@ export default function AuthModal({
 
   const handleSelectDemoUser = (user: User) => {
     localStorage.setItem("airbnb_user_id", user.id);
-    onUserLoggedIn(user);
+    if (onUserLoggedIn) onUserLoggedIn(user);
+    if (onSuccess) onSuccess();
     onClose();
   };
 

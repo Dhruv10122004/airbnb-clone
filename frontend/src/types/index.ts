@@ -12,10 +12,10 @@ export interface ListingSummary {
   id: string;
   title: string;
   property_type: string;
-  category: string;
+  category?: string;
   city: string;
   state?: string;
-  country: string;
+  country?: string;
   latitude?: number;
   longitude?: number;
   price_per_night: number;
@@ -23,7 +23,9 @@ export interface ListingSummary {
   cover_image: string;
   images: string[];
   average_rating: number;
-  review_count: number;
+  review_count?: number;
+  reviews_count?: number;
+  description?: string;
 }
 
 export interface ListingImage {

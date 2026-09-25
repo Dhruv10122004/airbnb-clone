@@ -47,8 +47,14 @@ export default function FilterModal({
     initialFilters.amenities ? initialFilters.amenities.split(",") : []
   );
 
-  // Close on Escape key
+  // Close on Escape key and sync state on open
   React.useEffect(() => {
+    if (isOpen) {
+      setMinPrice(initialFilters.min_price || "");
+      setMaxPrice(initialFilters.max_price || "");
+      setPropertyType(initialFilters.property_type || "All");
+      setSelectedAmenities(initialFilters.amenities ? initialFilters.amenities.split(",") : []);
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -56,7 +62,7 @@ export default function FilterModal({
       window.addEventListener("keydown", handleKeyDown);
       return () => window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, initialFilters]);
 
   if (!isOpen) return null;
 

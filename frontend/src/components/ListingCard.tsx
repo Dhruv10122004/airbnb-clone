@@ -130,12 +130,23 @@ export default function ListingCard({
 
       {/* Target State: Exactly 2 lines under image */}
       <Link href={listing.property_type === "Service" ? `/services/${listing.id}` : `/rooms/${listing.id}`} className="mt-3 block">
-        {/* Line 1: Title (no rating here) */}
-        <h4 className="font-semibold text-[15px] text-[#222222] truncate leading-snug">
-          {listing.title}
-        </h4>
+        {/* Line 1: Title & Rating */}
+        <div className="flex items-start justify-between gap-1">
+          <h4 className="font-semibold text-[15px] text-[#222222] truncate leading-snug flex-1">
+            {listing.title}
+          </h4>
+          <span className="font-medium text-[14px] text-[#222222] flex items-center gap-1 shrink-0 pt-0.5">
+            <Star className="w-3.5 h-3.5 fill-black text-black inline" />
+            {ratingFormatted}
+          </span>
+        </div>
 
-        {/* Line 2: Pricing or service details */}
+        {/* Line 2: Location */}
+        <p className="text-[13px] text-[#717171] truncate mt-0.5">
+          {listing.city ? `${listing.city}${listing.state ? `, ${listing.state}` : listing.country ? `, ${listing.country}` : ""}` : (listing.property_type || "Stay")}
+        </p>
+
+        {/* Line 3: Pricing details */}
         {listing.property_type === "Service" ? (
           <div>
             {listing.description?.startsWith("In home") && (
@@ -143,46 +154,27 @@ export default function ListingCard({
                 {listing.description.split(".")[0]}
               </p>
             )}
-            <p className="text-[14px] text-[#222222] mt-0.5 flex items-center gap-1">
-              <span className="font-normal text-[#222222]">
-                From ₹{listing.price_per_night.toLocaleString("en-IN")} / {listing.id === "srv_photo_4" ? "group" : "guest"}
-              </span>
-              {listing.is_guest_favourite && (
-                <>
-                  <span className="text-[#717171]">·</span>
-                  <span className="font-medium text-[#222222] flex items-center gap-0.5">
-                    <Star className="w-3.5 h-3.5 fill-black text-black inline" />
-                    {ratingFormatted}
-                  </span>
-                </>
-              )}
+            <p className="text-[14px] text-[#222222] mt-0.5">
+              <span className="font-semibold text-[#222222]">
+                ₹{listing.price_per_night.toLocaleString("en-IN")}
+              </span>{" "}
+              <span className="text-[#717171]">/ {listing.id === "srv_photo_4" ? "group" : "guest"}</span>
             </p>
           </div>
+        ) : listing.property_type === "Experience" ? (
+          <p className="text-[14px] text-[#222222] mt-0.5">
+            <span className="font-semibold text-[#222222]">
+              From ₹{listing.price_per_night.toLocaleString("en-IN")}
+            </span>{" "}
+            <span className="text-[#717171]">/ guest</span>
+          </p>
         ) : (
-          <p className="text-[14px] text-[#222222] mt-0.5 flex items-center gap-1">
-            {listing.property_type === "Experience" ? (
-              <>
-                <span className="font-normal text-[#222222]">
-                  From ₹{listing.price_per_night.toLocaleString("en-IN")} / guest
-                </span>
-                <span className="text-[#717171]">·</span>
-                <span className="font-medium text-[#222222] flex items-center gap-0.5">
-                  <Star className="w-3.5 h-3.5 fill-black text-black inline" />
-                  {ratingFormatted}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="font-normal text-[#717171]">
-                  ₹{totalCalculated.toLocaleString("en-IN")} for {nightsCount} nights
-                </span>
-                <span className="text-[#717171]">·</span>
-                <span className="font-medium text-[#222222] flex items-center gap-0.5">
-                  <Star className="w-3.5 h-3.5 fill-black text-black inline" />
-                  {ratingFormatted}
-                </span>
-              </>
-            )}
+          <p className="text-[14px] text-[#222222] mt-0.5 flex items-baseline gap-1">
+            <span className="font-semibold text-[#222222]">
+              ₹{listing.price_per_night.toLocaleString("en-IN")}
+            </span>
+            <span className="text-[#717171]">/ night</span>
+            <span className="text-[#717171] text-[13px] ml-1">· ₹{totalCalculated.toLocaleString("en-IN")} for {nightsCount} nights</span>
           </p>
         )}
       </Link>
