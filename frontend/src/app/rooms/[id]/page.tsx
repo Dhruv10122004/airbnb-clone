@@ -6,6 +6,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
+import CurrencyModal from "@/components/CurrencyModal";
 import { ListingDetail, User } from "@/types";
 import {
   fetchListingById,
@@ -20,18 +21,17 @@ import {
   Heart,
   Grid,
   ShieldCheck,
-  Award,
-  Wifi,
-  Car,
-  Tv,
-  Utensils,
-  Wind,
-  Waves,
-  Sparkles,
-  ChevronRight,
+  Calendar,
+  Clock,
+  MapPin,
   CheckCircle2,
-  Calendar as CalendarIcon,
   X,
+  MessageCircle,
+  Accessibility,
+  UserCheck,
+  Ban,
+  Activity,
+  Car,
 } from "lucide-react";
 
 export default function ListingDetailPage() {
@@ -44,6 +44,9 @@ export default function ListingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Selected date slot from the sticky booking list
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState(0);
+
   // Booking Widget State
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -55,6 +58,7 @@ export default function ListingDetailPage() {
 
   // Modals & Gallery
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -73,14 +77,14 @@ export default function ListingDetailPage() {
       setListing(detail);
       setCurrentUser(user);
 
-      // Pre-fill dates for convenient test booking (tomorrow for 3 nights)
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const after3Days = new Date();
-      after3Days.setDate(after3Days.getDate() + 4);
+      // Pre-fill dates for next available slots
+      const d1 = new Date();
+      d1.setDate(d1.getDate() + 1);
+      const d2 = new Date();
+      d2.setDate(d2.getDate() + 3);
 
-      setCheckIn(tomorrow.toISOString().split("T")[0]);
-      setCheckOut(after3Days.toISOString().split("T")[0]);
+      setCheckIn(d1.toISOString().split("T")[0]);
+      setCheckOut(d2.toISOString().split("T")[0]);
     } catch (err: any) {
       setError(err.message || "Failed to load listing details");
     } finally {
@@ -102,7 +106,6 @@ export default function ListingDetailPage() {
     }
   };
 
-  // Financial Calculations
   const calculateTotals = () => {
     if (!listing || !checkIn || !checkOut) return null;
     const start = new Date(checkIn);
@@ -122,7 +125,6 @@ export default function ListingDetailPage() {
 
   const totals = calculateTotals();
 
-  // Booking Execution
   const handleReserve = async () => {
     if (!listing || !totals) return;
     setBookingLoading(true);
@@ -143,7 +145,6 @@ export default function ListingDetailPage() {
     }
   };
 
-  // Review Submission
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewComment.trim()) return;
@@ -168,7 +169,6 @@ export default function ListingDetailPage() {
         <Navbar onOpenAuthModal={() => setIsAuthOpen(true)} currentUser={currentUser} onLogout={() => {}} />
         <div className="max-w-[1280px] mx-auto px-6 py-10 w-full animate-pulse space-y-6">
           <div className="h-8 bg-neutral-200 rounded-lg w-2/3" />
-          <div className="h-4 bg-neutral-200 rounded-lg w-1/3" />
           <div className="aspect-[2/1] bg-neutral-200 rounded-2xl" />
         </div>
       </div>
@@ -192,11 +192,20 @@ export default function ListingDetailPage() {
 
   const images = listing.images?.length ? listing.images.map((img) => img.url) : [];
 
+  // Generate 5 mock upcoming date slots matching frame_084s.jpg
+  const dateSlots = [
+    { label: "Tomorrow, 26 September", time: "2:30 – 4:30 am" },
+    { label: "Sunday, 27 September", time: "2:30 – 4:30 am" },
+    { label: "Monday, 28 September", time: "2:30 – 4:30 am" },
+    { label: "Tuesday, 29 September", time: "2:30 – 4:30 am" },
+    { label: "Wednesday, 30 September", time: "2:30 – 4:30 am" },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Top Navbar */}
       <Navbar
         onOpenAuthModal={() => setIsAuthOpen(true)}
+        onOpenCurrencyModal={() => setIsCurrencyOpen(true)}
         currentUser={currentUser}
         onLogout={() => {
           localStorage.removeItem("airbnb_user_id");
@@ -205,222 +214,292 @@ export default function ListingDetailPage() {
         }}
       />
 
-      <main className="max-w-[1280px] mx-auto px-6 sm:px-10 lg:px-16 py-6 w-full">
-        {/* Title & Action Header */}
-        <div className="mb-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#222222] tracking-tight">
-            {listing.title}
-          </h1>
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-4 text-sm">
-            <div className="flex items-center gap-2 text-[#222222]">
+      <main className="max-w-[1280px] mx-auto px-6 sm:px-10 lg:px-16 py-8 w-full">
+        {/* 
+          Top Section: 
+          Left: 2x2 Photo Grid matching frame_081s.jpg
+          Right: Title Block, Rating, Host info, and Meta rows
+        */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-12">
+          {/* Photo Section: 2x2 Grid with Rounded Corners */}
+          <div className="lg:col-span-6 grid grid-cols-2 gap-2.5 rounded-2xl overflow-hidden relative cursor-pointer" onClick={() => setIsGalleryOpen(true)}>
+            <div className="aspect-[4/3] overflow-hidden rounded-tl-2xl">
+              <img
+                src={images[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6"}
+                alt="Photo 1"
+                className="w-full h-full object-cover hover:scale-105 transition duration-300"
+              />
+            </div>
+            <div className="aspect-[4/3] overflow-hidden rounded-tr-2xl">
+              <img
+                src={images[1] || images[0]}
+                alt="Photo 2"
+                className="w-full h-full object-cover hover:scale-105 transition duration-300"
+              />
+            </div>
+            <div className="aspect-[4/3] overflow-hidden rounded-bl-2xl">
+              <img
+                src={images[2] || images[0]}
+                alt="Photo 3"
+                className="w-full h-full object-cover hover:scale-105 transition duration-300"
+              />
+            </div>
+            <div className="aspect-[4/3] overflow-hidden rounded-br-2xl relative">
+              <img
+                src={images[3] || images[0]}
+                alt="Photo 4"
+                className="w-full h-full object-cover hover:scale-105 transition duration-300"
+              />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsGalleryOpen(true);
+                }}
+                className="absolute bottom-3 right-3 bg-white hover:bg-neutral-100 text-[#222222] font-semibold text-xs py-1.5 px-3 rounded-lg border border-black shadow-md flex items-center gap-1.5 z-10 cursor-pointer"
+              >
+                <Grid className="w-3.5 h-3.5" />
+                <span>Show all</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Title Block & Host Info (frame_081s.jpg) */}
+          <div className="lg:col-span-6 space-y-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#222222] tracking-tight leading-tight">
+              {listing.title}
+            </h1>
+
+            <p className="text-sm text-[#717171] leading-relaxed">
+              {listing.description.split(".")[0]}.
+            </p>
+
+            {/* Rating & Location Line */}
+            <div className="flex items-center gap-2 text-sm text-[#222222]">
               <span className="flex items-center gap-1 font-semibold">
                 <Star className="w-4 h-4 fill-black text-black" />
-                {listing.average_rating ? listing.average_rating.toFixed(2) : "5.0"}
+                {listing.average_rating ? listing.average_rating.toFixed(2) : "4.91"}
               </span>
               <span>·</span>
-              <span className="font-semibold underline cursor-pointer">
-                {listing.review_count} {listing.review_count === 1 ? "review" : "reviews"}
-              </span>
-              <span>·</span>
-              {listing.host?.is_superhost && (
-                <>
-                  <span className="text-[#717171]">★ Superhost</span>
-                  <span>·</span>
-                </>
-              )}
-              <span className="text-[#717171] underline cursor-pointer">
-                {listing.city}, {listing.state ? `${listing.state}, ` : ""}{listing.country}
+              <span className="underline cursor-pointer">
+                {listing.review_count} ratings
               </span>
             </div>
 
-            <div className="flex items-center gap-4">
+            <p className="text-xs text-[#717171]">
+              {listing.city} · {listing.property_type}
+            </p>
+
+            {/* Action Row: Share and Save icons */}
+            <div className="flex items-center gap-4 pt-1">
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
                   alert("Listing link copied to clipboard!");
                 }}
-                className="flex items-center gap-2 py-1.5 px-3 rounded-lg hover:bg-slate-100 text-sm font-semibold text-[#222222] transition"
+                aria-label="Share"
+                className="p-2 rounded-full hover:bg-slate-100 text-[#222222] transition cursor-pointer"
               >
-                <Share className="w-4 h-4" />
-                <span className="underline">Share</span>
+                <Share className="w-5 h-5" />
               </button>
               <button
                 onClick={handleToggleWishlist}
-                className="flex items-center gap-2 py-1.5 px-3 rounded-lg hover:bg-slate-100 text-sm font-semibold text-[#222222] transition"
+                aria-label="Save"
+                className="p-2 rounded-full hover:bg-slate-100 text-[#222222] transition cursor-pointer"
               >
                 <Heart
-                  className={`w-4 h-4 ${
+                  className={`w-5 h-5 ${
                     isWishlisted ? "fill-[#FF385C] text-[#FF385C]" : "text-[#222222]"
                   }`}
                 />
-                <span className="underline">{isWishlisted ? "Saved" : "Save"}</span>
               </button>
             </div>
-          </div>
-        </div>
 
-        {/* Authentic 5-Photo Bento Grid */}
-        <div className="relative rounded-2xl overflow-hidden mb-8 grid grid-cols-1 md:grid-cols-4 gap-2 h-[340px] sm:h-[440px]">
-          {/* Main Primary Image */}
-          <div className="md:col-span-2 h-full relative cursor-pointer group" onClick={() => setIsGalleryOpen(true)}>
-            <img
-              src={images[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6"}
-              alt="Main cover"
-              className="w-full h-full object-cover group-hover:brightness-90 transition duration-200"
-            />
-          </div>
+            <div className="h-[1px] bg-[#EBEBEB] my-3" />
 
-          {/* 2nd & 3rd Images */}
-          <div className="hidden md:flex flex-col gap-2 h-full">
-            <div className="h-1/2 relative cursor-pointer group" onClick={() => setIsGalleryOpen(true)}>
+            {/* Host Row from frame_081s.jpg */}
+            <div className="flex items-center gap-3.5 py-1">
               <img
-                src={images[1] || images[0]}
-                alt="Interior 2"
-                className="w-full h-full object-cover group-hover:brightness-90 transition duration-200"
+                src={listing.host?.avatar_url || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"}
+                alt={listing.host?.full_name}
+                className="w-12 h-12 rounded-full object-cover border border-gray-200"
               />
-            </div>
-            <div className="h-1/2 relative cursor-pointer group" onClick={() => setIsGalleryOpen(true)}>
-              <img
-                src={images[2] || images[0]}
-                alt="Interior 3"
-                className="w-full h-full object-cover group-hover:brightness-90 transition duration-200"
-              />
-            </div>
-          </div>
-
-          {/* 4th & 5th Images */}
-          <div className="hidden md:flex flex-col gap-2 h-full relative">
-            <div className="h-1/2 relative cursor-pointer group" onClick={() => setIsGalleryOpen(true)}>
-              <img
-                src={images[3] || images[0]}
-                alt="Interior 4"
-                className="w-full h-full object-cover group-hover:brightness-90 transition duration-200"
-              />
-            </div>
-            <div className="h-1/2 relative cursor-pointer group" onClick={() => setIsGalleryOpen(true)}>
-              <img
-                src={images[4] || images[0]}
-                alt="Interior 5"
-                className="w-full h-full object-cover group-hover:brightness-90 transition duration-200"
-              />
-            </div>
-
-            {/* "Show all photos" floating pill button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsGalleryOpen(true);
-              }}
-              className="absolute bottom-4 right-4 bg-white hover:bg-neutral-100 text-[#222222] font-semibold text-xs py-2 px-3.5 rounded-lg border border-black shadow-md flex items-center gap-2 cursor-pointer z-10"
-            >
-              <Grid className="w-3.5 h-3.5" />
-              <span>Show all photos</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Content Layout: 2 Columns (Details on Left, Sticky Booking Widget on Right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative">
-          
-          {/* Left Column: Details & Amenities */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* Host Banner */}
-            <div className="flex items-center justify-between pb-6 border-b border-[#EBEBEB]">
               <div>
-                <h3 className="text-xl font-bold text-[#222222]">
-                  Entire {listing.property_type.toLowerCase()} hosted by {listing.host?.full_name}
-                </h3>
-                <p className="text-sm text-[#717171] mt-1">
-                  {listing.max_guests} guests · {listing.bedrooms} bedrooms · {listing.beds} beds · {listing.bathrooms} bathrooms
+                <h4 className="text-sm font-bold text-[#222222]">
+                  Hosted by {listing.host?.full_name}
+                </h4>
+                <p className="text-xs text-[#717171]">
+                  {listing.host?.is_superhost ? "Superhost · Verified Guide" : "Local host & guide"}
                 </p>
               </div>
-              <img
-                src={listing.host?.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
-                alt={listing.host?.full_name}
-                className="w-14 h-14 rounded-full object-cover border border-gray-200 shadow-xs"
-              />
             </div>
 
-            {/* Airbnb Highlights */}
-            <div className="space-y-4 pb-6 border-b border-[#EBEBEB]">
-              <div className="flex items-start gap-4">
-                <Award className="w-6 h-6 text-[#222222] flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-[#222222]">Superhost status</h4>
-                  <p className="text-xs text-[#717171]">Superhosts are experienced, highly rated hosts committed to great stays.</p>
-                </div>
+            {/* Meta Rows with Icons */}
+            <div className="space-y-3 pt-2 text-xs text-[#222222]">
+              <div className="flex items-center gap-3">
+                <MapPin className="w-4 h-4 text-[#717171] flex-shrink-0" />
+                <span>{listing.address || `${listing.city}, ${listing.country}`}</span>
               </div>
-              <div className="flex items-start gap-4">
-                <ShieldCheck className="w-6 h-6 text-[#222222] flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-[#222222]">AirCover protection</h4>
-                  <p className="text-xs text-[#717171]">Every booking includes free protection from Host cancellations and listing inaccuracies.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <Sparkles className="w-6 h-6 text-[#222222] flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-[#222222]">Dedicated workspace</h4>
-                  <p className="text-xs text-[#717171]">A room with high-speed wifi that’s well-suited for remote work.</p>
-                </div>
+              <div className="flex items-center gap-3">
+                <Clock className="w-4 h-4 text-[#717171] flex-shrink-0" />
+                <span>Around {listing.bedrooms * 2} hr experience · Hosted in English and Hindi</span>
               </div>
             </div>
 
-            {/* Description */}
-            <div className="pb-6 border-b border-[#EBEBEB]">
-              <h4 className="text-lg font-bold text-[#222222] mb-3">About this space</h4>
-              <p className="text-sm text-[#222222] leading-relaxed whitespace-pre-line">
-                {listing.description}
-              </p>
+            {/* Free Cancellation Card (frame_081s.jpg) */}
+            <div className="p-3.5 bg-white border border-[#EBEBEB] rounded-2xl shadow-xs flex items-center justify-between text-xs mt-3">
+              <div>
+                <span className="font-bold text-[#E00B41]">Free cancellation</span>
+                <span className="text-[#717171] ml-1">· Up to 1 day before start time</span>
+              </div>
+              <Calendar className="w-4 h-4 text-[#717171]" />
             </div>
+          </div>
+        </div>
 
-            {/* Amenities Grid */}
-            <div className="pb-6 border-b border-[#EBEBEB]">
-              <h4 className="text-lg font-bold text-[#222222] mb-4">What this place offers</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {listing.amenities.map((amenity, idx) => (
-                  <div key={idx} className="flex items-center gap-3 text-sm text-[#222222]">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>{amenity}</span>
+        {/* 
+          Main Content & Sticky Booking Card Grid 
+          (frame_084s.jpg to frame_096s.jpg)
+        */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 relative pt-6 border-t border-[#EBEBEB]">
+          
+          {/* Left Column: Itinerary, Map, Things to Know, Reviews */}
+          <div className="lg:col-span-7 space-y-10">
+            
+            {/* "What you'll do" Timeline from frame_084s.jpg */}
+            <div>
+              <h3 className="text-2xl font-bold text-[#222222] mb-6">What you&apos;ll do</h3>
+              <div className="space-y-6 relative before:absolute before:left-7 before:top-4 before:bottom-4 before:w-[2px] before:bg-gray-200">
+                <div className="flex items-start gap-5 relative">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 bg-neutral-100 z-10 shadow-xs">
+                    <img src={images[0]} alt="Step 1" className="w-full h-full object-cover" />
                   </div>
-                ))}
+                  <div className="pt-1">
+                    <h4 className="text-sm font-bold text-[#222222]">Arrival & Check-in</h4>
+                    <p className="text-xs text-[#717171] mt-0.5 leading-relaxed">
+                      Arrive at {listing.title} and settle into this beautiful space with refreshments.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-5 relative">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 bg-neutral-100 z-10 shadow-xs">
+                    <img src={images[1] || images[0]} alt="Step 2" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="pt-1">
+                    <h4 className="text-sm font-bold text-[#222222]">Explore the Property & Views</h4>
+                    <p className="text-xs text-[#717171] mt-0.5 leading-relaxed">
+                      Enjoy the scenic balcony views, amenities, and personalized recommendations from {listing.host?.full_name}.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-5 relative">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 bg-neutral-100 z-10 shadow-xs">
+                    <img src={images[2] || images[0]} alt="Step 3" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="pt-1">
+                    <h4 className="text-sm font-bold text-[#222222]">Relax & Unwind</h4>
+                    <p className="text-xs text-[#717171] mt-0.5 leading-relaxed">
+                      Take time for dinner, indoor amenities, or explore nearby cafes and attractions.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Already Booked Dates Notice (Calendar Availability Proof) */}
-            {listing.booked_dates?.length > 0 && (
-              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
-                <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
-                  <CalendarIcon className="w-4 h-4" />
-                  <span>Reserved Dates Blocked for this Property:</span>
+            {/* "Where we'll meet" Section from frame_090s.jpg */}
+            <div className="pt-6 border-t border-[#EBEBEB]">
+              <h3 className="text-2xl font-bold text-[#222222] mb-2">Where we&apos;ll meet</h3>
+              <p className="text-xs text-[#717171] mb-4">
+                {listing.address || `${listing.city}, ${listing.country}, 282001`}
+              </p>
+
+              {/* Embedded Map Canvas with Center Pin matching frame_090s.jpg */}
+              <div className="aspect-[16/9] w-full bg-[#E5E3DF] rounded-3xl overflow-hidden relative border border-gray-200 shadow-xs flex items-center justify-center">
+                <div className="absolute inset-0 bg-[radial-gradient(#d1d5db_1px,transparent_1px)] [background-size:20px_20px]" />
+                
+                {/* Meeting Point Pin */}
+                <div className="z-10 flex flex-col items-center animate-bounce">
+                  <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center shadow-lg">
+                    <MapPin className="w-5 h-5 fill-white" />
+                  </div>
+                  <span className="mt-1 bg-white text-black font-bold text-[11px] px-2 py-0.5 rounded-md shadow-md border border-gray-100">
+                    Meeting point
+                  </span>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {listing.booked_dates.map((range, idx) => (
-                    <span
-                      key={idx}
-                      className="text-xs bg-white text-amber-900 border border-amber-300 px-2.5 py-1 rounded-full font-medium"
-                    >
-                      🔒 {range.check_in} to {range.check_out} (Unavailable)
-                    </span>
-                  ))}
+
+                <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-md text-[10px] font-bold text-gray-700">
+                  Google Map Preview · {listing.city}
                 </div>
               </div>
-            )}
+            </div>
+
+            {/* "Things to know" from frame_096s.jpg */}
+            <div className="pt-6 border-t border-[#EBEBEB]">
+              <h3 className="text-2xl font-bold text-[#222222] mb-6">Things to know</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs text-[#222222]">
+                <div className="space-y-1.5">
+                  <UserCheck className="w-5 h-5 text-[#222222]" />
+                  <h4 className="font-bold">Guest requirements</h4>
+                  <p className="text-[#717171] leading-relaxed">
+                    Guests aged 2 and up can attend. Accommodates up to {listing.max_guests} guests.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Activity className="w-5 h-5 text-[#222222]" />
+                  <h4 className="font-bold">Activity level</h4>
+                  <p className="text-[#717171] leading-relaxed">
+                    The activity level for this stay is light and relaxed.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <CheckCircle2 className="w-5 h-5 text-[#222222]" />
+                  <h4 className="font-bold">What&apos;s included</h4>
+                  <p className="text-[#717171] leading-relaxed">
+                    High speed wifi, private parking, and all listed amenities.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Ban className="w-5 h-5 text-[#222222]" />
+                  <h4 className="font-bold">What&apos;s not included</h4>
+                  <p className="text-[#717171] leading-relaxed">
+                    Personal grocery shopping and extra transportation services.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Accessibility className="w-5 h-5 text-[#222222]" />
+                  <h4 className="font-bold">Accessibility</h4>
+                  <p className="text-[#717171] leading-relaxed">
+                    Step-free path to entrance. Message your host for details.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Calendar className="w-5 h-5 text-[#222222]" />
+                  <h4 className="font-bold">Cancellation policy</h4>
+                  <p className="text-[#717171] leading-relaxed">
+                    Cancel at least 1 day before check-in for a full refund.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {/* Reviews Section */}
-            <div className="pt-2 space-y-6">
-              <div className="flex items-center gap-2">
+            <div className="pt-6 border-t border-[#EBEBEB]">
+              <div className="flex items-center gap-2 mb-6">
                 <Star className="w-5 h-5 fill-black text-black" />
-                <h4 className="text-xl font-bold text-[#222222]">
-                  {listing.average_rating ? listing.average_rating.toFixed(2) : "5.0"} · {listing.review_count} reviews
-                </h4>
+                <h3 className="text-2xl font-bold text-[#222222]">
+                  {listing.average_rating ? listing.average_rating.toFixed(2) : "4.91"} · {listing.review_count} ratings
+                </h3>
               </div>
 
-              {/* Reviews List */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {listing.reviews.map((rev) => (
-                  <div key={rev.id} className="space-y-2 border border-gray-100 p-4 rounded-2xl bg-[#F7F7F7]/50">
+                  <div key={rev.id} className="p-4 rounded-2xl border border-gray-100 bg-[#F7F7F7]/60 space-y-2">
                     <div className="flex items-center gap-3">
                       <img
                         src={rev.author?.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"}
@@ -428,20 +507,19 @@ export default function ListingDetailPage() {
                         className="w-10 h-10 rounded-full object-cover"
                       />
                       <div>
-                        <p className="text-sm font-bold text-[#222222]">{rev.author?.full_name}</p>
-                        <p className="text-xs text-[#717171]">★ {rev.rating_overall.toFixed(1)} rating</p>
+                        <p className="text-xs font-bold text-[#222222]">{rev.author?.full_name}</p>
+                        <p className="text-[11px] text-[#717171]">★ {rev.rating_overall.toFixed(1)} rating · 1 day ago</p>
                       </div>
                     </div>
-                    <p className="text-xs text-[#222222] leading-relaxed mt-2">{rev.comment}</p>
+                    <p className="text-xs text-[#222222] leading-relaxed">{rev.comment}</p>
                   </div>
                 ))}
               </div>
 
-              {/* Leave a Review (Bonus Feature) */}
-              <form onSubmit={handleAddReview} className="border border-[#DDDDDD] p-5 rounded-2xl bg-white space-y-3">
-                <h5 className="font-bold text-sm text-[#222222]">Leave a Review for this stay</h5>
+              {/* Leave a Review Form */}
+              <form onSubmit={handleAddReview} className="mt-6 border border-[#DDDDDD] p-5 rounded-2xl bg-white space-y-3">
+                <h4 className="font-bold text-sm text-[#222222]">Leave a Rating & Review</h4>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-[#717171]">Rating:</span>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       type="button"
@@ -460,7 +538,7 @@ export default function ListingDetailPage() {
                 <textarea
                   rows={3}
                   required
-                  placeholder="Share details of your experience at this property..."
+                  placeholder="Share details of your experience..."
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
                   className="w-full text-xs p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-black"
@@ -468,130 +546,105 @@ export default function ListingDetailPage() {
                 <button
                   type="submit"
                   disabled={submittingReview}
-                  className="bg-black text-white text-xs font-semibold py-2 px-5 rounded-xl hover:bg-neutral-800 transition cursor-pointer disabled:opacity-50"
+                  className="bg-black text-white text-xs font-semibold py-2 px-5 rounded-xl hover:bg-neutral-800 transition cursor-pointer"
                 >
                   {submittingReview ? "Posting..." : "Post Review"}
                 </button>
               </form>
-
             </div>
 
           </div>
 
-          {/* Right Column: Sticky Booking Widget */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-28 bg-white border border-[#DDDDDD] rounded-3xl p-6 shadow-[0_6px_16px_rgba(0,0,0,0.12)] space-y-4">
+          {/* 
+            Right Column: Sticky Booking Card 
+            (Exact Replica of frame_084s.jpg)
+          */}
+          <div className="lg:col-span-5">
+            <div className="sticky top-28 bg-white border border-[#EBEBEB] rounded-3xl p-6 shadow-[0_6px_20px_rgba(0,0,0,0.12)] space-y-5">
               
-              {/* Header Price */}
-              <div className="flex items-baseline justify-between">
+              {/* Header: Price & "Show dates" Button from frame_084s.jpg */}
+              <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-2xl font-bold text-[#222222]">
-                    ₹{listing.price_per_night.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-sm text-[#717171] ml-1">night</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xs text-[#717171]">From</span>
+                    <span className="text-xl font-bold text-[#222222]">
+                      ₹{listing.price_per_night.toLocaleString("en-IN")}
+                    </span>
+                    <span className="text-xs text-[#717171]">/ guest</span>
+                  </div>
+                  <p className="text-[11px] font-semibold text-[#E00B41] mt-0.5">
+                    Free cancellation
+                  </p>
                 </div>
-                <div className="flex items-center gap-1 text-xs font-semibold">
-                  <Star className="w-3.5 h-3.5 fill-black text-black" />
-                  <span>{listing.average_rating ? listing.average_rating.toFixed(1) : "5.0"}</span>
-                  <span className="text-[#717171]">({listing.review_count})</span>
-                </div>
+
+                <button
+                  onClick={handleReserve}
+                  disabled={bookingLoading}
+                  className="bg-[#E00B41] hover:bg-[#D70466] text-white text-sm font-bold py-2.5 px-6 rounded-full shadow-md transition cursor-pointer disabled:opacity-50"
+                >
+                  {bookingLoading ? "Reserving..." : "Show dates"}
+                </button>
               </div>
 
-              {/* Date & Guest Input Box */}
-              <div className="border border-gray-400 rounded-2xl overflow-hidden divide-y divide-gray-400">
-                <div className="grid grid-cols-2 divide-x divide-gray-400">
-                  <div className="p-2.5">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#222222]">
-                      Check-in
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={checkIn}
-                      onChange={(e) => setCheckIn(e.target.value)}
-                      className="w-full text-xs font-semibold mt-0.5 focus:outline-none bg-transparent cursor-pointer"
-                    />
-                  </div>
-                  <div className="p-2.5">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#222222]">
-                      Checkout
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={checkOut}
-                      onChange={(e) => setCheckOut(e.target.value)}
-                      className="w-full text-xs font-semibold mt-0.5 focus:outline-none bg-transparent cursor-pointer"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-2.5">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#222222]">
-                    Guests
-                  </label>
-                  <select
-                    value={guestCount}
-                    onChange={(e) => setGuestCount(Number(e.target.value))}
-                    className="w-full text-xs font-semibold mt-0.5 focus:outline-none bg-transparent cursor-pointer"
-                  >
-                    {[...Array(listing.max_guests)].map((_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1} {i + 1 === 1 ? "guest" : "guests"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Date Slots List from frame_084s.jpg */}
+              <div className="space-y-2.5">
+                {dateSlots.map((slot, index) => {
+                  const isSelected = selectedSlotIndex === index;
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedSlotIndex(index)}
+                      className={`w-full text-left p-3.5 rounded-2xl border transition cursor-pointer ${
+                        isSelected
+                          ? "border-black bg-slate-50 ring-1 ring-black"
+                          : "border-[#DDDDDD] hover:border-black"
+                      }`}
+                    >
+                      <h5 className="text-sm font-bold text-[#222222]">{slot.label}</h5>
+                      <p className="text-xs text-[#717171] mt-0.5">{slot.time}</p>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Error Message */}
+              {/* Error Message if any */}
               {bookingError && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-medium">
                   {bookingError}
                 </div>
               )}
 
-              {/* Reserve Button */}
-              <button
-                onClick={handleReserve}
-                disabled={bookingLoading || !totals}
-                className="w-full airbnb-btn-gradient text-white font-bold py-3.5 rounded-xl shadow-md hover:shadow-lg transition cursor-pointer disabled:opacity-50"
-              >
-                {bookingLoading ? "Reserving stay..." : "Reserve"}
-              </button>
-
-              <p className="text-center text-xs text-[#717171]">
-                You won&apos;t be charged yet
-              </p>
-
-              {/* Price Breakdown */}
+              {/* Dynamic Financial Breakdown */}
               {totals && (
-                <div className="space-y-3 pt-3 border-t border-[#EBEBEB] text-sm text-[#222222]">
+                <div className="space-y-2.5 pt-3 border-t border-[#EBEBEB] text-xs text-[#222222]">
                   <div className="flex justify-between">
-                    <span className="underline">
-                      ₹{listing.price_per_night.toLocaleString("en-IN")} × {totals.nights} nights
-                    </span>
+                    <span className="underline">₹{listing.price_per_night.toLocaleString("en-IN")} × {totals.nights} nights</span>
                     <span>₹{totals.basePrice.toLocaleString("en-IN")}</span>
                   </div>
-
                   <div className="flex justify-between">
                     <span className="underline">Cleaning fee</span>
                     <span>₹{totals.cleaningFee.toLocaleString("en-IN")}</span>
                   </div>
-
                   <div className="flex justify-between">
                     <span className="underline">Airbnb service fee (12%)</span>
                     <span>₹{totals.serviceFee.toLocaleString("en-IN")}</span>
                   </div>
-
                   <div className="h-[1px] bg-[#EBEBEB] my-2" />
-
-                  <div className="flex justify-between text-base font-bold text-black">
-                    <span>Total before taxes</span>
+                  <div className="flex justify-between text-sm font-bold text-black">
+                    <span>Total</span>
                     <span>₹{totals.total.toLocaleString("en-IN")}</span>
                   </div>
                 </div>
               )}
+
+              {/* Primary Reserve CTA */}
+              <button
+                onClick={handleReserve}
+                disabled={bookingLoading}
+                className="w-full airbnb-btn-gradient text-white font-bold py-3.5 rounded-xl shadow-md hover:shadow-lg transition cursor-pointer disabled:opacity-50"
+              >
+                {bookingLoading ? "Reserving stay..." : "Confirm & Reserve"}
+              </button>
 
             </div>
           </div>
@@ -599,7 +652,7 @@ export default function ListingDetailPage() {
         </div>
       </main>
 
-      {/* Full Photo Lightbox Gallery Modal */}
+      {/* Full Photo Lightbox Gallery */}
       {isGalleryOpen && (
         <div className="fixed inset-0 z-50 bg-white overflow-y-auto p-6 sm:p-12 animate-in fade-in duration-200">
           <div className="max-w-4xl mx-auto space-y-6">
@@ -641,7 +694,7 @@ export default function ListingDetailPage() {
             <div className="text-center">
               <h3 className="text-xl font-bold text-[#222222]">Stay Confirmed!</h3>
               <p className="text-xs text-[#717171] mt-1">
-                Your reservation at <span className="font-semibold text-black">{listing.title}</span> has been booked and the calendar dates are locked.
+                Your reservation at <span className="font-semibold text-black">{listing.title}</span> has been confirmed.
               </p>
             </div>
 
@@ -653,10 +706,6 @@ export default function ListingDetailPage() {
               <div className="flex justify-between">
                 <span className="text-[#717171]">Dates</span>
                 <span className="font-semibold">{confirmedBooking.check_in} → {confirmedBooking.check_out} ({confirmedBooking.total_nights} nights)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#717171]">Guests</span>
-                <span className="font-semibold">{confirmedBooking.guest_count} guests</span>
               </div>
               <div className="flex justify-between text-sm font-bold pt-2 border-t border-gray-200">
                 <span>Total Paid (Mocked)</span>
@@ -690,6 +739,14 @@ export default function ListingDetailPage() {
           setCurrentUser(u);
           loadData();
         }}
+      />
+
+      {/* Currency Modal */}
+      <CurrencyModal
+        isOpen={isCurrencyOpen}
+        onClose={() => setIsCurrencyOpen(false)}
+        selectedCurrency="INR"
+        onSelectCurrency={() => {}}
       />
 
       <Footer />
