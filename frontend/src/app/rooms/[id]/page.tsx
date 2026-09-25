@@ -1650,6 +1650,15 @@ export default function RoomDetailPage() {
                     className="text-xs text-[#222222] placeholder:text-[#717171] focus:outline-none w-full bg-transparent"
                   />
                 </div>
+
+                {/* 📍 Live Pricing Pins — Coming Soon */}
+                <div className="absolute bottom-5 left-5 z-10 flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-[#DDDDDD] shadow-md rounded-2xl px-3.5 py-2.5">
+                  <span className="text-sm">📍</span>
+                  <div>
+                    <p className="text-[11px] font-bold text-[#222222]">Live Pricing Pins — Coming Soon</p>
+                    <p className="text-[10px] text-[#717171]">Real-time price pins on map are under development</p>
+                  </div>
+                </div>
               </div>
 
               <p className="text-sm font-semibold text-[#222222] mt-4">
@@ -1733,12 +1742,17 @@ export default function RoomDetailPage() {
                   </div>
 
                   <div>
-                    <button
-                      onClick={() => alert(`Starting direct chat with ${listing.host?.full_name || "Deeksha"}...`)}
-                      className="bg-[#F7F7F7] hover:bg-neutral-200 text-[#222222] font-semibold text-sm px-6 py-3 rounded-xl border border-gray-200 transition cursor-pointer"
-                    >
-                      Message host
-                    </button>
+                    <p className="text-sm font-semibold text-[#222222] mb-1">Message host</p>
+                    {/* 💬 Messaging — Coming Soon */}
+                    <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-sky-50 border border-sky-200">
+                      <span className="text-sky-500 text-base flex-shrink-0">💬</span>
+                      <div>
+                        <p className="text-xs font-bold text-sky-800">Real-time Messaging — Coming Soon</p>
+                        <p className="text-[11px] text-sky-700 mt-0.5 leading-relaxed">
+                          In-app messaging between guests and hosts is currently under development. For now, contact the host via the booking confirmation email.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3 pt-4 border-t border-[#EBEBEB] text-xs text-[#717171]">

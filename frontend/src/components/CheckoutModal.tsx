@@ -202,7 +202,17 @@ export default function CheckoutModal({
           </div>
         </div>
 
-        {/* Modal Body: Two Columns */}
+        {/* 🔔 DEMO MODE BANNER — Real payment processing coming soon */}
+        <div className="mx-6 mt-4 flex items-start gap-3 p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
+          <span className="text-amber-500 text-base flex-shrink-0">⚠️</span>
+          <div>
+            <p className="text-xs font-bold text-amber-800">Demo Mode — Payment is mocked</p>
+            <p className="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
+              Real payment processing (Stripe / Razorpay) is <span className="font-bold">coming soon</span>. No real charge will be made. Your booking will still be confirmed and dates blocked.
+            </p>
+          </div>
+        </div>
+
         <div className="overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1">
           
           {/* Left Column: Booking Details & Payment Form */}

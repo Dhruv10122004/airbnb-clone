@@ -142,6 +142,14 @@ export default function AuthModal({
             </button>
           </div>
 
+          {/* 🔐 Real Auth — Coming Soon */}
+          <div className="mt-4 flex items-start gap-2 p-3 rounded-2xl bg-blue-50 border border-blue-100">
+            <span className="text-blue-400 text-sm flex-shrink-0">🔐</span>
+            <p className="text-[11px] text-blue-700 leading-relaxed">
+              <span className="font-bold">Real Google / Apple OAuth & SMS OTP</span> are coming soon. Currently uses simplified demo profiles — select one below to test guest and host features.
+            </p>
+          </div>
+
           {/* Demo user fast-switch — hidden by default, shown via button */}
           <button
             onClick={() => setShowDemoUsers(!showDemoUsers)}

@@ -392,34 +392,16 @@ export default function ServiceDetailView({
                 </div>
               </div>
 
-              {/* Message Host CTA Button (rec6.mp4.mp4 frame_34.0s) */}
-              <button
-                onClick={() => setShowMessageHost(!showMessageHost)}
-                className="w-full mt-6 py-3.5 bg-neutral-100 hover:bg-neutral-200 text-[#222222] font-semibold text-sm rounded-xl transition cursor-pointer"
-              >
-                Message {hostName}
-              </button>
-
-              {showMessageHost && (
-                <form onSubmit={handleSendMessage} className="mt-4 p-4 border border-gray-200 rounded-2xl space-y-3 bg-neutral-50">
-                  <p className="text-xs font-bold text-[#222222]">Send a message to {hostName}:</p>
-                  <textarea
-                    rows={3}
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder="Hi! I have a question about styling for my wedding event..."
-                    className="w-full p-3 bg-white border border-gray-200 rounded-xl text-xs focus:outline-black resize-none"
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-black text-white font-semibold text-xs rounded-xl hover:bg-neutral-800 transition cursor-pointer"
-                    >
-                      {messageSent ? "Sent!" : "Send message"}
-                    </button>
-                  </div>
-                </form>
-              )}
+              {/* Message Host — Coming Soon */}
+              <div className="w-full mt-6 flex items-start gap-2.5 p-3.5 rounded-2xl bg-sky-50 border border-sky-200">
+                <span className="text-sky-500 text-base flex-shrink-0">💬</span>
+                <div>
+                  <p className="text-xs font-bold text-sky-800">Message {hostName} — Coming Soon</p>
+                  <p className="text-[11px] text-sky-700 mt-0.5 leading-relaxed">
+                    Real-time in-app messaging between guests and hosts is under development. Contact after booking confirmation.
+                  </p>
+                </div>
+              </div>
 
               <p className="text-[11px] text-[#717171] text-center mt-3">
                 To help protect your payment, always use Airbnb to send money and communicate with hosts.

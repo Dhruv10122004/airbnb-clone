@@ -313,6 +313,100 @@ export default function TripsPage() {
             })}
           </div>
         )}
+
+        {/* ──────────────────────────────────────────────────── */}
+        {/* COMING SOON PLACEHOLDER SECTIONS */}
+        {/* ──────────────────────────────────────────────────── */}
+        <div className="mt-14 space-y-5">
+          <h2 className="text-xl font-bold text-[#222222]">Coming Soon</h2>
+          <p className="text-sm text-[#717171]">
+            These features are planned and will be available in a future update.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            {/* 🪪 Identity Verification */}
+            <div className="border border-dashed border-[#DDDDDD] rounded-3xl p-6 bg-neutral-50/60 space-y-3">
+              <div className="w-11 h-11 rounded-2xl bg-violet-100 flex items-center justify-center text-xl">
+                🪪
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#222222]">Identity Verification</h3>
+                <p className="text-xs text-[#717171] mt-1 leading-relaxed">
+                  Government ID upload, biometric liveness check, and host/guest trust score. Integration with Onfido / DigiLocker is planned.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-violet-700 bg-violet-100 px-2.5 py-1 rounded-full">
+                <Clock className="w-3 h-3" /> Coming Soon
+              </span>
+            </div>
+
+            {/* 🔐 Full OAuth & SMS Auth */}
+            <div className="border border-dashed border-[#DDDDDD] rounded-3xl p-6 bg-neutral-50/60 space-y-3">
+              <div className="w-11 h-11 rounded-2xl bg-blue-100 flex items-center justify-center text-xl">
+                🔐
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#222222]">Full Authentication</h3>
+                <p className="text-xs text-[#717171] mt-1 leading-relaxed">
+                  Real Google / Apple OAuth, SMS OTP login, and password-based accounts. Currently uses simplified demo profiles with guest vs host roles.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full">
+                <Clock className="w-3 h-3" /> Coming Soon
+              </span>
+            </div>
+
+            {/* 💬 Guest ↔ Host Messaging */}
+            <div className="border border-dashed border-[#DDDDDD] rounded-3xl p-6 bg-neutral-50/60 space-y-3">
+              <div className="w-11 h-11 rounded-2xl bg-sky-100 flex items-center justify-center text-xl">
+                💬
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#222222]">Guest ↔ Host Messaging</h3>
+                <p className="text-xs text-[#717171] mt-1 leading-relaxed">
+                  Real-time in-app messaging between guests and hosts with read receipts, notifications, and booking-linked threads.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-sky-700 bg-sky-100 px-2.5 py-1 rounded-full">
+                <Clock className="w-3 h-3" /> Coming Soon
+              </span>
+            </div>
+
+            {/* 💳 Real Payment Processing */}
+            <div className="border border-dashed border-[#DDDDDD] rounded-3xl p-6 bg-neutral-50/60 space-y-3">
+              <div className="w-11 h-11 rounded-2xl bg-amber-100 flex items-center justify-center text-xl">
+                💳
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#222222]">Real Payment Processing</h3>
+                <p className="text-xs text-[#717171] mt-1 leading-relaxed">
+                  Stripe / Razorpay integration for live card, UPI, and net banking payments. Checkout is currently mocked — no real charge is made.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">
+                <Clock className="w-3 h-3" /> Coming Soon
+              </span>
+            </div>
+
+            {/* 🗺️ Live Pricing Pins on Map */}
+            <div className="border border-dashed border-[#DDDDDD] rounded-3xl p-6 bg-neutral-50/60 space-y-3">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-100 flex items-center justify-center text-xl">
+                🗺️
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#222222]">Live Pricing Pins on Map</h3>
+                <p className="text-xs text-[#717171] mt-1 leading-relaxed">
+                  Interactive map with real-time price bubbles per listing, clustering, and live availability filters. Currently shows a static OpenStreetMap.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+                <Clock className="w-3 h-3" /> Coming Soon
+              </span>
+            </div>
+
+          </div>
+        </div>
       </main>
 
       <AuthModal
