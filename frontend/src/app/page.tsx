@@ -382,7 +382,7 @@ export default function HomePage() {
       />
 
       {/* 2. Search Capsule */}
-      <div className="bg-white py-4 px-4 flex justify-center">
+      <div className="bg-white border-b border-[#EBEBEB] py-3.5 px-4 flex justify-center">
         <SearchCapsule
           onSearch={setSearchParams}
           activeNavTab={activeNavTab}
@@ -391,8 +391,9 @@ export default function HomePage() {
         />
       </div>
 
-      {/* 3. Main Content */}
-      <main className="max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-16 pt-6 pb-16 flex-1 w-full">
+      {/* 3. Main Content with warm off-white #FAFAFA background for depth */}
+      <div className="bg-[#FAFAFA] flex-1 w-full">
+        <main className="max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-16 pt-8 pb-16 flex-1 w-full">
 
         {/* ======================================================== */}
         {/* VIEW 1: HOMES or ALL (Default or Filtered)               */}
@@ -556,35 +557,12 @@ export default function HomePage() {
                 {/* Section 1: Popular homes in Noida */}
                 {noidaHomes.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-2 group cursor-pointer">
-                        <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
-                          Popular homes in Noida
-                        </h2>
-                        <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
-                      </div>
-
-                      <div className="flex items-center gap-2.5">
-                        <button
-                          onClick={() => setIsFilterOpen(true)}
-                          className="flex items-center gap-1.5 py-1.5 px-3 border border-gray-300 rounded-full hover:border-black transition text-xs font-semibold text-[#222222] cursor-pointer bg-white"
-                        >
-                          <SlidersHorizontal className="w-3.5 h-3.5" />
-                          <span>Filters</span>
-                          {filterCount > 0 && (
-                            <span className="w-4 h-4 rounded-full bg-black text-white text-[10px] flex items-center justify-center">
-                              {filterCount}
-                            </span>
-                          )}
-                        </button>
-                        <div className="flex items-center gap-1.5">
-                          <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-gray-400 hover:text-black transition cursor-pointer">
-                            <ChevronLeft className="w-4 h-4" />
-                          </button>
-                          <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-black transition cursor-pointer">
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        </div>
+                    <div className="flex items-center gap-3 mb-4 group cursor-pointer w-fit">
+                      <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                        Popular homes in Noida
+                      </h2>
+                      <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
+                        <ChevronRight className="w-4 h-4 text-[#222222]" />
                       </div>
                     </div>
 
@@ -604,21 +582,12 @@ export default function HomePage() {
                 {/* Section 2: Available in Gurgaon District this weekend */}
                 {gurgaonHomes.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-2 group cursor-pointer">
-                        <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
-                          Available in Gurgaon District this weekend
-                        </h2>
-                        <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-gray-400 hover:text-black transition cursor-pointer">
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-black transition cursor-pointer">
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
+                    <div className="flex items-center gap-3 mb-4 group cursor-pointer w-fit">
+                      <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                        Available in Gurgaon District this weekend
+                      </h2>
+                      <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
+                        <ChevronRight className="w-4 h-4 text-[#222222]" />
                       </div>
                     </div>
 
@@ -638,21 +607,12 @@ export default function HomePage() {
                 {/* Section 3: Iconic Stays & Escapes */}
                 {otherHomes.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-2 group cursor-pointer">
-                        <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
-                          Iconic Stays & Vacation Escapes
-                        </h2>
-                        <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-gray-400 hover:text-black transition cursor-pointer">
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <button className="w-8 h-8 rounded-full border border-gray-200 hover:border-black flex items-center justify-center text-black transition cursor-pointer">
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
+                    <div className="flex items-center gap-3 mb-4 group cursor-pointer w-fit">
+                      <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                        Iconic Stays & Vacation Escapes
+                      </h2>
+                      <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
+                        <ChevronRight className="w-4 h-4 text-[#222222]" />
                       </div>
                     </div>
 
@@ -755,15 +715,15 @@ export default function HomePage() {
               <>
                 {/* Popular experiences in New Delhi */}
                 <div>
-                  <div className="flex items-center justify-between mb-5">
-                    <div
-                      onClick={() => setActiveNavTab("experiences")}
-                      className="flex items-center gap-2 group cursor-pointer"
-                    >
-                      <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
-                        Popular experiences in New Delhi
-                      </h2>
-                      <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
+                  <div
+                    onClick={() => setActiveNavTab("experiences")}
+                    className="flex items-center gap-3 mb-4 group cursor-pointer w-fit"
+                  >
+                    <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                      Popular experiences in New Delhi
+                    </h2>
+                    <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
+                      <ChevronRight className="w-4 h-4 text-[#222222]" />
                     </div>
                   </div>
 
@@ -781,15 +741,15 @@ export default function HomePage() {
 
                 {/* Photography Services */}
                 <div>
-                  <div className="flex items-center justify-between mb-5">
-                    <div
-                      onClick={() => setActiveNavTab("services")}
-                      className="flex items-center gap-2 group cursor-pointer"
-                    >
-                      <h2 className="text-xl sm:text-2xl font-bold text-[#222222] tracking-tight">
-                        Photography
-                      </h2>
-                      <ArrowRight className="w-5 h-5 text-[#222222] transition-transform group-hover:translate-x-1" />
+                  <div
+                    onClick={() => setActiveNavTab("services")}
+                    className="flex items-center gap-3 mb-4 group cursor-pointer w-fit"
+                  >
+                    <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                      Photography
+                    </h2>
+                    <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
+                      <ChevronRight className="w-4 h-4 text-[#222222]" />
                     </div>
                   </div>
 
@@ -1218,6 +1178,7 @@ export default function HomePage() {
         )}
 
       </main>
+      </div>
 
 
 

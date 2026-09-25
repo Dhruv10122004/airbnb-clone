@@ -372,7 +372,7 @@ export default function SearchCapsule({
             className={`flex items-center rounded-full transition-all duration-200 w-full relative ${
               activeField
                 ? "bg-[#EBEBEB] border border-transparent shadow-[0_6px_20px_rgba(0,0,0,0.1)] p-0"
-                : "bg-white border border-[#DDDDDD] shadow-[0_1px_2px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-md"
+                : "bg-white border border-[#DDDDDD] shadow-[0_1px_2px_rgba(0,0,0,0.08),0_3px_12px_rgba(0,0,0,0.08)] hover:shadow-[0_2px_4px_rgba(0,0,0,0.12),0_6px_16px_rgba(0,0,0,0.08)]"
             }`}
           >
         {/* Segment 1: Where */}
@@ -380,12 +380,12 @@ export default function SearchCapsule({
           onClick={() => setActiveField(activeField === "where" ? null : "where")}
           onMouseEnter={() => setHoveredField("where")}
           onMouseLeave={() => setHoveredField(null)}
-          className={`flex-1 py-3 px-6 rounded-full cursor-pointer transition-all duration-200 relative ${
+          className={`flex-1 py-2.5 px-6 rounded-full cursor-pointer transition-colors duration-150 relative ${
             activeField === "where"
               ? "bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
               : activeField
               ? "hover:bg-black/5"
-              : "hover:bg-[#EBEBEB]/70"
+              : "hover:bg-[#F2F2F2]"
           }`}
         >
           <span className="block text-[12px] font-bold text-[#222222]">Where</span>
@@ -400,7 +400,7 @@ export default function SearchCapsule({
 
         {/* Divider 1 */}
         <div
-          className={`h-8 w-[1px] bg-[#EBEBEB] transition-opacity duration-150 ${
+          className={`h-7 w-[1px] bg-[#EBEBEB] transition-opacity duration-150 ${
             isDivider1Visible ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -410,12 +410,12 @@ export default function SearchCapsule({
           onClick={() => setActiveField(activeField === "when" ? null : "when")}
           onMouseEnter={() => setHoveredField("when")}
           onMouseLeave={() => setHoveredField(null)}
-          className={`flex-1 py-3 px-6 rounded-full cursor-pointer transition-all duration-200 relative ${
+          className={`flex-1 py-2.5 px-6 rounded-full cursor-pointer transition-colors duration-150 relative ${
             activeField === "when"
               ? "bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
               : activeField
               ? "hover:bg-black/5"
-              : "hover:bg-[#EBEBEB]/70"
+              : "hover:bg-[#F2F2F2]"
           }`}
         >
           <span className="block text-[12px] font-bold text-[#222222]">When</span>
@@ -430,7 +430,7 @@ export default function SearchCapsule({
 
         {/* Divider 2 */}
         <div
-          className={`h-8 w-[1px] bg-[#EBEBEB] transition-opacity duration-150 ${
+          className={`h-7 w-[1px] bg-[#EBEBEB] transition-opacity duration-150 ${
             isDivider2Visible ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -440,12 +440,12 @@ export default function SearchCapsule({
           onClick={() => setActiveField(activeField === "who" ? null : "who")}
           onMouseEnter={() => setHoveredField("who")}
           onMouseLeave={() => setHoveredField(null)}
-          className={`flex-1 py-3 pl-6 pr-2 rounded-full cursor-pointer transition-all duration-200 relative flex items-center justify-between ${
+          className={`flex-1 py-2.5 pl-6 pr-2 rounded-full cursor-pointer transition-colors duration-150 relative flex items-center justify-between ${
             activeField === "who"
               ? "bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
               : activeField
               ? "hover:bg-black/5"
-              : "hover:bg-[#EBEBEB]/70"
+              : "hover:bg-[#F2F2F2]"
           }`}
         >
           <div className="truncate pr-2">
@@ -469,10 +469,10 @@ export default function SearchCapsule({
               triggerSearch();
             }}
             aria-label="Search"
-            className={`rounded-full bg-[#E00B41] hover:bg-[#D70466] flex items-center justify-center text-white flex-shrink-0 transition-all duration-200 shadow-sm cursor-pointer ${
+            className={`rounded-full bg-[#FF385C] hover:bg-[#E00B41] flex items-center justify-center text-white flex-shrink-0 transition-all duration-200 shadow-sm cursor-pointer ${
               activeField
-                ? "py-3 px-4 gap-2"
-                : "w-10 h-10"
+                ? "py-2.5 px-4 gap-2"
+                : "w-9 h-9 sm:w-10 sm:h-10"
             }`}
           >
             <Search className="w-4 h-4 stroke-[3]" />
