@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import { Booking, User } from "@/types";
-import { fetchMyTrips, cancelBooking, fetchCurrentUser } from "@/lib/api";
+import { fetchMyTrips, cancelBooking, fetchCurrentUser, addReview } from "@/lib/api";
 import {
   Calendar,
   MapPin,
@@ -19,6 +19,8 @@ import {
   XCircle,
   Clock,
   Sparkles,
+  Star,
+  X,
 } from "lucide-react";
 
 export default function TripsPage() {
@@ -29,6 +31,39 @@ export default function TripsPage() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [filterTab, setFilterTab] = useState<"all" | "upcoming" | "cancelled">("all");
   const [cancelToast, setCancelToast] = useState<string | null>(null);
+  const [reviewModalTrip, setReviewModalTrip] = useState<Booking | null>(null);
+  const [reviewRating, setReviewRating] = useState<number>(5);
+  const [reviewComment, setReviewComment] = useState<string>("");
+  const [submittingReview, setSubmittingReview] = useState<boolean>(false);
+  const [reviewedListingIds, setReviewedListingIds] = useState<Set<string>>(new Set());
+  const [reviewToast, setReviewToast] = useState<string | null>(null);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewModalTrip) return;
+    if (!reviewComment.trim()) {
+      alert("Please write a short comment about your stay.");
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      await addReview(reviewModalTrip.listing_id, {
+        rating_overall: reviewRating,
+        comment: reviewComment.trim(),
+      });
+      setReviewedListingIds((prev) => new Set(prev).add(reviewModalTrip.listing_id));
+      setReviewToast("Review submitted successfully! Thank you for sharing your experience.");
+      setTimeout(() => setReviewToast(null), 5000);
+      setReviewModalTrip(null);
+      setReviewComment("");
+      setReviewRating(5);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Failed to submit review");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -130,6 +165,22 @@ export default function TripsPage() {
             <button
               onClick={() => setCancelToast(null)}
               className="text-emerald-700 hover:text-emerald-950 font-bold ml-4 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Review Notification Toast */}
+        {reviewToast && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center justify-between animate-in fade-in duration-200">
+            <div className="flex items-center gap-2">
+              <Star className="w-4 h-4 fill-amber-500 text-amber-500 flex-shrink-0" />
+              <span>{reviewToast}</span>
+            </div>
+            <button
+              onClick={() => setReviewToast(null)}
+              className="text-amber-800 hover:text-black font-bold ml-4 cursor-pointer"
             >
               ✕
             </button>
@@ -286,7 +337,7 @@ export default function TripsPage() {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
                         <Link
                           href={`/rooms/${trip.listing_id}`}
                           className="text-xs font-semibold text-neutral-800 hover:text-black flex items-center gap-1 hover:underline"
@@ -296,13 +347,35 @@ export default function TripsPage() {
                         </Link>
 
                         {!isCancelled && (
-                          <button
-                            onClick={() => handleCancelBooking(trip.id)}
-                            disabled={cancellingId === trip.id}
-                            className="text-xs text-red-600 hover:text-red-800 font-semibold underline cursor-pointer disabled:opacity-50"
-                          >
-                            {cancellingId === trip.id ? "Cancelling..." : "Cancel"}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => {
+                                setReviewModalTrip(trip);
+                                setReviewRating(5);
+                                setReviewComment("");
+                              }}
+                              className="text-xs font-semibold px-3 py-1.5 rounded-full border border-neutral-300 hover:border-black text-neutral-800 hover:text-black transition flex items-center gap-1.5 cursor-pointer bg-white"
+                            >
+                              <Star
+                                className={`w-3.5 h-3.5 ${
+                                  reviewedListingIds.has(trip.listing_id)
+                                    ? "fill-amber-400 text-amber-400"
+                                    : "text-neutral-500"
+                                }`}
+                              />
+                              <span>
+                                {reviewedListingIds.has(trip.listing_id) ? "Reviewed" : "Write a review"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => handleCancelBooking(trip.id)}
+                              disabled={cancellingId === trip.id}
+                              className="text-xs text-red-600 hover:text-red-800 font-semibold underline cursor-pointer disabled:opacity-50"
+                            >
+                              {cancellingId === trip.id ? "Cancelling..." : "Cancel"}
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
@@ -408,6 +481,96 @@ export default function TripsPage() {
           </div>
         </div>
       </main>
+
+      {/* ──────────────────────────────────────────────────── */}
+      {/* LEAVE A REVIEW MODAL */}
+      {/* ──────────────────────────────────────────────────── */}
+      {reviewModalTrip && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-neutral-200 overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+              <div>
+                <h3 className="text-base font-bold text-[#222222]">Write a Review</h3>
+                <p className="text-xs text-[#717171] line-clamp-1 mt-0.5">
+                  {reviewModalTrip.listing?.title}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReviewModalTrip(null)}
+                className="w-8 h-8 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <form onSubmit={handleSubmitReview} className="p-6 space-y-5">
+              {/* Star Rating Selector */}
+              <div>
+                <label className="block text-xs font-bold text-[#222222] mb-2 uppercase tracking-wide">
+                  Overall Rating
+                </label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      type="button"
+                      key={star}
+                      onClick={() => setReviewRating(star)}
+                      className="p-1 rounded-lg hover:scale-110 transition cursor-pointer"
+                    >
+                      <Star
+                        className={`w-7 h-7 transition ${
+                          star <= reviewRating
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-neutral-300 hover:text-neutral-400"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  <span className="ml-2 text-sm font-bold text-[#222222]">
+                    {reviewRating}.0 / 5.0
+                  </span>
+                </div>
+              </div>
+
+              {/* Comment Textarea */}
+              <div>
+                <label className="block text-xs font-bold text-[#222222] mb-2 uppercase tracking-wide">
+                  Your Feedback
+                </label>
+                <textarea
+                  rows={4}
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="What did you love about this stay? How was the host, location, and cleanliness?"
+                  className="w-full text-sm p-3.5 rounded-2xl border border-neutral-300 focus:outline-hidden focus:border-black focus:ring-1 focus:ring-black placeholder:text-neutral-400 resize-none"
+                  required
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setReviewModalTrip(null)}
+                  className="px-4 py-2.5 rounded-full text-xs font-bold text-neutral-600 hover:bg-neutral-100 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingReview || !reviewComment.trim()}
+                  className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#FF385C] hover:bg-[#E00B41] transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                >
+                  {submittingReview ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <AuthModal
         isOpen={isAuthOpen}
