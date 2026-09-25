@@ -7,6 +7,8 @@ import CategoryBar from "@/components/CategoryBar";
 import ListingCard from "@/components/ListingCard";
 import FilterModal from "@/components/FilterModal";
 import AuthModal from "@/components/AuthModal";
+import CurrencyModal from "@/components/CurrencyModal";
+import PromoModal from "@/components/PromoModal";
 import Footer from "@/components/Footer";
 import { ListingSummary, User } from "@/types";
 import {
@@ -23,8 +25,11 @@ export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   
-  // Filters
+  // Navigation & Category State
+  const [activeNavTab, setActiveNavTab] = useState<"all" | "homes" | "experiences" | "services">("homes");
   const [selectedCategory, setSelectedCategory] = useState("all");
+
+  // Filters
   const [searchParams, setSearchParams] = useState<{
     destination?: string;
     checkIn?: string;
@@ -38,10 +43,32 @@ export default function HomePage() {
     amenities?: string;
   }>({});
 
+  // Currency State
+  const [currency, setCurrency] = useState("INR");
+  const [currencySymbol, setCurrencySymbol] = useState("₹");
+
   // Modals
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
+  const [isPromoOpen, setIsPromoOpen] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
+
+  // Trigger Promo Modal once for logged-out users after 1.5 seconds
+  useEffect(() => {
+    const promoDismissed = sessionStorage.getItem("airbnb_promo_dismissed");
+    if (!promoDismissed) {
+      const timer = setTimeout(() => {
+        setIsPromoOpen(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleClosePromo = () => {
+    sessionStorage.setItem("airbnb_promo_dismissed", "true");
+    setIsPromoOpen(false);
+  };
 
   // Load initial data
   const loadData = async () => {
@@ -111,15 +138,22 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Navbar with Search Capsule */}
+      {/* 1. Top Navbar with Center Tabs */}
       <Navbar
         onOpenAuthModal={() => setIsAuthOpen(true)}
+        onOpenCurrencyModal={() => setIsCurrencyOpen(true)}
         currentUser={currentUser}
         onLogout={handleLogout}
-        centerContent={<SearchCapsule onSearch={setSearchParams} />}
+        activeNavTab={activeNavTab}
+        onSelectNavTab={setActiveNavTab}
       />
 
-      {/* Category Icon Bar */}
+      {/* 2. Hero Search Bar Section (Centered directly below Navbar) */}
+      <div className="bg-white border-b border-[#EBEBEB] pb-5 pt-3 px-4 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+        <SearchCapsule onSearch={setSearchParams} />
+      </div>
+
+      {/* 3. Category Icon Bar */}
       <CategoryBar
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
@@ -127,7 +161,7 @@ export default function HomePage() {
         filterCount={activeFiltersCount}
       />
 
-      {/* Main Content Area */}
+      {/* 4. Main Content Area */}
       <main className="max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-16 py-8 flex-1 w-full">
         {loading ? (
           // Skeleton Loader
@@ -137,7 +171,6 @@ export default function HomePage() {
                 <div className="aspect-[20/19] bg-neutral-200 rounded-2xl" />
                 <div className="h-4 bg-neutral-200 rounded-md w-3/4" />
                 <div className="h-3 bg-neutral-200 rounded-md w-1/2" />
-                <div className="h-4 bg-neutral-200 rounded-md w-1/3" />
               </div>
             ))}
           </div>
@@ -242,7 +275,7 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* Interactive Map Modal (Bonus Requirement with Price Pins) */}
+      {/* Interactive Map Modal with Price Pins */}
       {showMapModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-4xl w-full h-[80vh] flex flex-col shadow-2xl overflow-hidden relative">
@@ -253,13 +286,12 @@ export default function HomePage() {
               </h3>
               <button
                 onClick={() => setShowMapModal(false)}
-                className="text-sm font-semibold text-[#717171] hover:text-black py-1 px-3 border border-gray-200 rounded-full"
+                className="text-sm font-semibold text-[#717171] hover:text-black py-1 px-3 border border-gray-200 rounded-full cursor-pointer"
               >
                 Close
               </button>
             </div>
             <div className="flex-1 bg-slate-100 relative p-6 overflow-y-auto">
-              {/* Map Canvas with Custom Price Badge Pins */}
               <div className="w-full h-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] rounded-2xl border border-gray-200 relative flex items-center justify-center">
                 <div className="absolute inset-0 p-6 flex flex-wrap gap-4 items-center justify-around">
                   {listings.map((item) => (
@@ -293,6 +325,24 @@ export default function HomePage() {
         onClose={() => setIsFilterOpen(false)}
         onApply={setFilterParams}
         initialFilters={filterParams}
+      />
+
+      {/* Currency Modal (Section 5) */}
+      <CurrencyModal
+        isOpen={isCurrencyOpen}
+        onClose={() => setIsCurrencyOpen(false)}
+        selectedCurrency={currency}
+        onSelectCurrency={(code, sym) => {
+          setCurrency(code);
+          setCurrencySymbol(sym);
+        }}
+      />
+
+      {/* Promo Modal (Section 6) */}
+      <PromoModal
+        isOpen={isPromoOpen}
+        onClose={handleClosePromo}
+        onClaim={() => setIsAuthOpen(true)}
       />
 
       {/* Auth Modal */}
