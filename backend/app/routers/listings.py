@@ -1,4 +1,5 @@
 from datetime import date
+import re
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -74,16 +75,49 @@ def get_listings(
 
     # Filter by destination/location
     if destination and destination.strip():
-        dest_term = f"%{destination.strip().lower()}%"
-        query = query.filter(
-            or_(
-                func.lower(Listing.city).like(dest_term),
-                func.lower(Listing.state).like(dest_term),
-                func.lower(Listing.country).like(dest_term),
-                func.lower(Listing.title).like(dest_term),
-                func.lower(Listing.address).like(dest_term)
-            )
-        )
+        dest_clean = destination.strip().lower()
+        if dest_clean not in ["nearby", "anywhere", "all"]:
+            # Extract primary locality before comma (e.g. "Noida" from "Noida, Uttar Pradesh")
+            primary_part = dest_clean.split(",")[0].strip()
+            tokens = [t.strip() for t in re.split(r'[,/\s]+', dest_clean) if t.strip()]
+            significant_tokens = [t for t in tokens if t not in ["district", "near", "nearby", "in", "area", "the"]]
+
+            primary_tokens = [t.strip() for t in re.split(r'[,/\s]+', primary_part) if t.strip()]
+            significant_primary = [t for t in primary_tokens if t not in ["district", "near", "nearby", "in", "area", "the"]]
+
+            # Condition 1: All significant tokens match across location fields (city, state, country, address, title)
+            all_tokens_filter = []
+            for token in (significant_tokens or tokens):
+                term = f"%{token}%"
+                all_tokens_filter.append(
+                    or_(
+                        func.lower(Listing.city).like(term),
+                        func.lower(Listing.state).like(term),
+                        func.lower(Listing.country).like(term),
+                        func.lower(Listing.address).like(term),
+                        func.lower(Listing.title).like(term)
+                    )
+                )
+
+            # Condition 2: Primary locality (e.g. "noida", "gurgaon") matches city, address, or title
+            primary_filters = []
+            for token in (significant_primary or primary_tokens or tokens):
+                term = f"%{token}%"
+                primary_filters.append(
+                    or_(
+                        func.lower(Listing.city).like(term),
+                        func.lower(Listing.address).like(term),
+                        func.lower(Listing.title).like(term)
+                    )
+                )
+
+            # Match if all tokens match across the fields OR if the primary locality matches
+            if all_tokens_filter and primary_filters:
+                query = query.filter(or_(and_(*all_tokens_filter), and_(*primary_filters)))
+            elif all_tokens_filter:
+                query = query.filter(and_(*all_tokens_filter))
+            elif primary_filters:
+                query = query.filter(and_(*primary_filters))
 
     # Filter by price range
     if min_price is not None:
