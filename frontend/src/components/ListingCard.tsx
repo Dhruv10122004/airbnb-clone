@@ -40,9 +40,10 @@ export default function ListingCard({
   };
 
   const totalCalculated = listing.price_per_night * nightsCount;
+  const ratingFormatted = listing.average_rating ? listing.average_rating.toFixed(1) : "5.0";
 
   return (
-    <div className="group flex flex-col relative">
+    <div className="group flex flex-col relative cursor-pointer">
       {/* Image Carousel Container */}
       <div className="relative aspect-[20/19] w-full overflow-hidden rounded-2xl bg-neutral-100">
         <Link href={`/rooms/${listing.id}`} className="block w-full h-full">
@@ -57,7 +58,7 @@ export default function ListingCard({
         <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
           {/* Guest Favourite Badge */}
           {listing.is_guest_favourite ? (
-            <div className="bg-white/95 backdrop-blur-xs text-[#222222] text-[11px] font-bold px-2.5 py-1 rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.18)] pointer-events-auto">
+            <div className="bg-white/95 backdrop-blur-xs text-[#222222] text-[12px] font-semibold px-2.5 py-1 rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.18)] pointer-events-auto">
               Guest favourite
             </div>
           ) : (
@@ -117,36 +118,24 @@ export default function ListingCard({
         )}
       </div>
 
-      {/* Info Block (Exact Replica of Airbnb Screenshot) */}
+      {/* Target State: Exactly 2 lines under image */}
       <Link href={`/rooms/${listing.id}`} className="mt-3 block">
-        {/* Line 1: Title & Rating */}
-        <div className="flex items-baseline justify-between gap-2">
-          <h4 className="font-semibold text-[15px] text-[#222222] truncate">
-            {listing.title}
-          </h4>
-          <div className="flex items-center gap-1 text-[14px] flex-shrink-0">
-            <Star className="w-3.5 h-3.5 fill-black text-black" />
-            <span className="font-medium text-[#222222]">
-              {listing.average_rating ? listing.average_rating.toFixed(1) : "5.0"}
-            </span>
-          </div>
-        </div>
+        {/* Line 1: Title (no rating here) */}
+        <h4 className="font-semibold text-[15px] text-[#222222] truncate leading-snug">
+          {listing.title}
+        </h4>
 
-        {/* Line 2: Location details / Category */}
-        <p className="text-[14px] text-[#717171] truncate mt-0.5">
-          {listing.city}, {listing.country}
+        {/* Line 2: Pricing for N nights and rating combined */}
+        <p className="text-[14px] text-[#222222] mt-0.5 flex items-center gap-1">
+          <span className="font-normal text-[#717171]">
+            ₹{totalCalculated.toLocaleString("en-IN")} for {nightsCount} nights
+          </span>
+          <span className="text-[#717171]">·</span>
+          <span className="font-medium text-[#222222] flex items-center gap-0.5">
+            <Star className="w-3.5 h-3.5 fill-black text-black inline" />
+            {ratingFormatted}
+          </span>
         </p>
-
-        {/* Line 3: Pricing */}
-        <div className="mt-1 flex items-baseline gap-1 text-[14px]">
-          <span className="font-semibold text-[#222222]">
-            ₹{listing.price_per_night.toLocaleString("en-IN")}
-          </span>
-          <span className="text-[#717171]">night</span>
-          <span className="text-xs text-[#717171] ml-1">
-            · ₹{totalCalculated.toLocaleString("en-IN")} for {nightsCount} nights
-          </span>
-        </div>
       </Link>
     </div>
   );
