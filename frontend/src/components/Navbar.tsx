@@ -16,6 +16,13 @@ interface NavbarProps {
   onSelectNavTab?: (tab: "all" | "homes" | "experiences" | "services") => void;
 }
 
+const navTabMetadata: Record<string, { icon: string; label: string }> = {
+  all: { icon: "/icons/nav_all.png", label: "All" },
+  homes: { icon: "/icons/nav_homes.png", label: "Homes" },
+  experiences: { icon: "/icons/nav_experiences.png", label: "Experiences" },
+  services: { icon: "/icons/nav_services.png", label: "Services" },
+};
+
 export default function Navbar({
   onOpenAuthModal,
   onOpenCurrencyModal,
@@ -158,12 +165,15 @@ export default function Navbar({
         ) : (
           /* Compact search pill — shown when scrolled */
           <div className="hidden md:flex flex-1 justify-center px-6">
-            <button className="flex items-center gap-0 border border-[#DDDDDD] rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.08),0_3px_12px_rgba(0,0,0,0.08)] hover:shadow-md transition-shadow duration-200 bg-white text-sm font-medium text-[#222222]">
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex items-center gap-0 border border-[#DDDDDD] rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.08),0_3px_12px_rgba(0,0,0,0.08)] hover:shadow-md transition-shadow duration-200 bg-white text-sm font-medium text-[#222222] cursor-pointer"
+            >
               <span className="flex items-center gap-2 px-4 py-2.5 border-r border-[#EBEBEB]">
                 <img
-                  src="/icons/nav_homes.png"
-                  alt="Homes"
-                  className="w-6 h-5 object-contain"
+                  src={navTabMetadata[activeNavTab]?.icon || "/icons/nav_homes.png"}
+                  alt={navTabMetadata[activeNavTab]?.label || "Category"}
+                  className="w-5 h-5 object-contain flex-shrink-0"
                 />
                 <span className="text-[13px] font-semibold text-[#222222]">Anywhere</span>
               </span>
