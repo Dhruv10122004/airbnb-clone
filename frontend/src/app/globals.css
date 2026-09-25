@@ -26,6 +26,11 @@ body {
   scrollbar-width: none;
 }
 
+/* Strict 1:1 square aspect ratio for cards matching real Airbnb */
+.card-image-square {
+  aspect-ratio: 1 / 1 !important;
+}
+
 /* Airbnb Gradient Button */
 .airbnb-btn-gradient {
   background: radial-gradient(circle at center, #FF385C 0%, #E61E4D 27.5%, #E31C5F 40%, #D70466 57.5%, #BD1E59 75%, #BD1E59 100%);

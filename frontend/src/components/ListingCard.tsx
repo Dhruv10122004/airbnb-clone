@@ -44,9 +44,15 @@ export default function ListingCard({
 
   return (
     <div className="group flex flex-col relative cursor-pointer">
-      {/* Image Carousel Container (1:1 square aspect ratio) */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-[#F7F7F7]">
-        <Link href={`/rooms/${listing.id}`} className="block w-full h-full">
+      {/* Image Carousel Container (Strict 1:1 square aspect ratio matching original Airbnb) */}
+      <div
+        className="relative w-full overflow-hidden rounded-2xl bg-[#F7F7F7] card-image-square"
+        style={{ aspectRatio: "1 / 1" }}
+      >
+        <Link
+          href={listing.property_type === "Service" ? `/services/${listing.id}` : `/rooms/${listing.id}`}
+          className="block w-full h-full"
+        >
           <img
             src={images[currentImgIndex]}
             alt={listing.title}

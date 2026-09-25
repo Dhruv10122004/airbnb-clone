@@ -398,7 +398,7 @@ export default function HomePage() {
 
       {/* 3. Main Content (Pure White #FFFFFF) */}
       <div className="bg-white flex-1 w-full relative z-10">
-        <main className="max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-16 pt-8 pb-16 flex-1 w-full">
+        <main className="max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-16 pt-6 pb-16 flex-1 w-full">
 
         {/* ======================================================== */}
         {/* VIEW 1: HOMES or ALL (Default or Filtered)               */}
@@ -482,7 +482,7 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-4.5 xl:gap-5">
                       {listings
                         .filter(isHomeListing)
                         .slice((currentPage - 1) * pageSize, currentPage * pageSize)
@@ -559,19 +559,60 @@ export default function HomePage() {
             ) : (
               /* DEFAULT CURATED SECTIONS VIEW */
               <>
+                {/* Continue searching banner matching original Airbnb (frame_000s.jpg) */}
+                <div className="flex flex-col items-center justify-center mb-6">
+                  <div
+                    onClick={() => setActiveNavTab("experiences")}
+                    className="inline-flex items-center gap-3 bg-white border border-[#EBEBEB] hover:shadow-md rounded-2xl p-1.5 pr-4 cursor-pointer transition shadow-xs group"
+                  >
+                    <img
+                      src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=120"
+                      alt="Experience thumbnail"
+                      className="w-12 h-12 rounded-xl object-cover"
+                    />
+                    <div className="flex items-center gap-1.5 text-sm font-semibold text-[#222222]">
+                      <span>Continue searching for experiences in New Delhi</span>
+                      <span className="text-[#717171] font-normal">26 Sept</span>
+                      <span className="ml-1 text-sm font-bold group-hover:translate-x-0.5 transition-transform">→</span>
+                    </div>
+                  </div>
+                  <div className="w-full border-b border-[#EBEBEB] mt-7 mb-4" />
+                </div>
+
                 {/* Section 1: Popular homes in Noida */}
                 {noidaHomes.length > 0 && (
                   <div>
-                    <div className="flex items-center gap-3 mb-4 group cursor-pointer w-fit">
-                      <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
-                        Popular homes in Noida
-                      </h2>
-                      <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
-                        <ChevronRight className="w-4 h-4 text-[#222222]" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2.5 group cursor-pointer w-fit">
+                        <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                          Popular homes in Noida
+                        </h2>
+                        <div className="w-7 h-7 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-colors bg-white">
+                          <ChevronRight className="w-3.5 h-3.5 stroke-[2.2]" />
+                        </div>
+                      </div>
+
+                      {/* Right-aligned navigation arrows pair (< disabled, > enabled) */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled
+                          aria-label="Previous stays"
+                          className="w-8 h-8 rounded-full border border-[#EBEBEB] text-[#D0D0D0] cursor-not-allowed flex items-center justify-center bg-white transition"
+                        >
+                          <ChevronLeft className="w-4 h-4 stroke-[2.2]" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Next stays"
+                          className="w-8 h-8 rounded-full border border-[#DDDDDD] text-[#222222] hover:border-black active:scale-95 flex items-center justify-center bg-white transition hover:shadow-xs"
+                        >
+                          <ChevronRight className="w-4 h-4 stroke-[2.2]" />
+                        </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-4.5 xl:gap-5">
                       {noidaHomes.map((listing) => (
                         <ListingCard
                           key={listing.id}
@@ -587,16 +628,37 @@ export default function HomePage() {
                 {/* Section 2: Available in Gurgaon District this weekend */}
                 {gurgaonHomes.length > 0 && (
                   <div>
-                    <div className="flex items-center gap-3 mb-4 group cursor-pointer w-fit">
-                      <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
-                        Available in Gurgaon District this weekend
-                      </h2>
-                      <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
-                        <ChevronRight className="w-4 h-4 text-[#222222]" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2.5 group cursor-pointer w-fit">
+                        <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                          Available in Gurgaon District this weekend
+                        </h2>
+                        <div className="w-7 h-7 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-colors bg-white">
+                          <ChevronRight className="w-3.5 h-3.5 stroke-[2.2]" />
+                        </div>
+                      </div>
+
+                      {/* Right-aligned navigation arrows pair */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled
+                          aria-label="Previous stays"
+                          className="w-8 h-8 rounded-full border border-[#EBEBEB] text-[#D0D0D0] cursor-not-allowed flex items-center justify-center bg-white transition"
+                        >
+                          <ChevronLeft className="w-4 h-4 stroke-[2.2]" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Next stays"
+                          className="w-8 h-8 rounded-full border border-[#DDDDDD] text-[#222222] hover:border-black active:scale-95 flex items-center justify-center bg-white transition hover:shadow-xs"
+                        >
+                          <ChevronRight className="w-4 h-4 stroke-[2.2]" />
+                        </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-4.5 xl:gap-5">
                       {gurgaonHomes.map((listing) => (
                         <ListingCard
                           key={listing.id}
@@ -612,16 +674,37 @@ export default function HomePage() {
                 {/* Section 3: Iconic Stays & Escapes */}
                 {otherHomes.length > 0 && (
                   <div>
-                    <div className="flex items-center gap-3 mb-4 group cursor-pointer w-fit">
-                      <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
-                        Iconic Stays & Vacation Escapes
-                      </h2>
-                      <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
-                        <ChevronRight className="w-4 h-4 text-[#222222]" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2.5 group cursor-pointer w-fit">
+                        <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                          Iconic Stays & Vacation Escapes
+                        </h2>
+                        <div className="w-7 h-7 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-colors bg-white">
+                          <ChevronRight className="w-3.5 h-3.5 stroke-[2.2]" />
+                        </div>
+                      </div>
+
+                      {/* Right-aligned navigation arrows pair */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled
+                          aria-label="Previous stays"
+                          className="w-8 h-8 rounded-full border border-[#EBEBEB] text-[#D0D0D0] cursor-not-allowed flex items-center justify-center bg-white transition"
+                        >
+                          <ChevronLeft className="w-4 h-4 stroke-[2.2]" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Next stays"
+                          className="w-8 h-8 rounded-full border border-[#DDDDDD] text-[#222222] hover:border-black active:scale-95 flex items-center justify-center bg-white transition hover:shadow-xs"
+                        >
+                          <ChevronRight className="w-4 h-4 stroke-[2.2]" />
+                        </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-4.5 xl:gap-5">
                       {otherHomes.map((listing) => (
                         <ListingCard
                           key={listing.id}
@@ -646,7 +729,7 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-4.5 xl:gap-5">
                       {listings
                         .filter(isHomeListing)
                         .slice((currentPage - 1) * pageSize, currentPage * pageSize)
@@ -720,19 +803,40 @@ export default function HomePage() {
               <>
                 {/* Popular experiences in New Delhi */}
                 <div>
-                  <div
-                    onClick={() => setActiveNavTab("experiences")}
-                    className="flex items-center gap-3 mb-4 group cursor-pointer w-fit"
-                  >
-                    <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
-                      Popular experiences in New Delhi
-                    </h2>
-                    <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
-                      <ChevronRight className="w-4 h-4 text-[#222222]" />
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      onClick={() => setActiveNavTab("experiences")}
+                      className="flex items-center gap-2.5 group cursor-pointer w-fit"
+                    >
+                      <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                        Popular experiences in New Delhi
+                      </h2>
+                      <div className="w-7 h-7 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-colors bg-white">
+                        <ChevronRight className="w-3.5 h-3.5 stroke-[2.2]" />
+                      </div>
+                    </div>
+
+                    {/* Right-aligned navigation arrows pair */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled
+                        aria-label="Previous experiences"
+                        className="w-8 h-8 rounded-full border border-[#EBEBEB] text-[#D0D0D0] cursor-not-allowed flex items-center justify-center bg-white transition"
+                      >
+                        <ChevronLeft className="w-4 h-4 stroke-[2.2]" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Next experiences"
+                        className="w-8 h-8 rounded-full border border-[#DDDDDD] text-[#222222] hover:border-black active:scale-95 flex items-center justify-center bg-white transition hover:shadow-xs"
+                      >
+                        <ChevronRight className="w-4 h-4 stroke-[2.2]" />
+                      </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-4.5 xl:gap-5">
                     {listings.filter((l) => l.property_type === "Experience").slice(0, 6).map((item) => (
                       <ListingCard
                         key={item.id}
@@ -746,19 +850,40 @@ export default function HomePage() {
 
                 {/* Photography Services */}
                 <div>
-                  <div
-                    onClick={() => setActiveNavTab("services")}
-                    className="flex items-center gap-3 mb-4 group cursor-pointer w-fit"
-                  >
-                    <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
-                      Photography
-                    </h2>
-                    <div className="w-8 h-8 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-all duration-150 group-hover:scale-105 bg-white shadow-xs">
-                      <ChevronRight className="w-4 h-4 text-[#222222]" />
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      onClick={() => setActiveNavTab("services")}
+                      className="flex items-center gap-2.5 group cursor-pointer w-fit"
+                    >
+                      <h2 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
+                        Photography
+                      </h2>
+                      <div className="w-7 h-7 rounded-full border border-[#DDDDDD] group-hover:border-black flex items-center justify-center text-[#222222] transition-colors bg-white">
+                        <ChevronRight className="w-3.5 h-3.5 stroke-[2.2]" />
+                      </div>
+                    </div>
+
+                    {/* Right-aligned navigation arrows pair */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled
+                        aria-label="Previous services"
+                        className="w-8 h-8 rounded-full border border-[#EBEBEB] text-[#D0D0D0] cursor-not-allowed flex items-center justify-center bg-white transition"
+                      >
+                        <ChevronLeft className="w-4 h-4 stroke-[2.2]" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Next services"
+                        className="w-8 h-8 rounded-full border border-[#DDDDDD] text-[#222222] hover:border-black active:scale-95 flex items-center justify-center bg-white transition hover:shadow-xs"
+                      >
+                        <ChevronRight className="w-4 h-4 stroke-[2.2]" />
+                      </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-4.5 xl:gap-5">
                     {(serviceListings.filter((l) => l.id.startsWith("srv_photo")).length > 0
                       ? serviceListings.filter((l) => l.id.startsWith("srv_photo"))
                       : fallbackPhotoServices
