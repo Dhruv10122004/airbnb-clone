@@ -1,4 +1,4 @@
-﻿# Airbnb Clone
+# Airbnb Clone
 
 A full-stack Airbnb-inspired web application built with Next.js 15 on the frontend and FastAPI with SQLite on the backend. The project replicates the core user journey of the Airbnb platform: browsing property listings, searching and filtering by location and dates, viewing detailed listing pages, checking out with a mocked payment flow, managing trips, and hosting properties through a dedicated host dashboard.
 
@@ -9,11 +9,10 @@ A full-stack Airbnb-inspired web application built with Next.js 15 on the fronte
 1. [Live Features](#live-features)
 2. [Mocked and Placeholder Features](#mocked-and-placeholder-features)
 3. [Tech Stack](#tech-stack)
-4. [Project Structure](#project-structure)
-5. [Setup Instructions](#setup-instructions)
-6. [Architecture Overview](#architecture-overview)
-7. [Database Schema](#database-schema)
-8. [API Reference](#api-reference)
+4. [Setup Instructions](#setup-instructions)
+5. [Architecture Overview](#architecture-overview)
+6. [Database Schema](#database-schema)
+7. [API Reference](#api-reference)
 
 ---
 
@@ -65,63 +64,6 @@ The following features are intentionally mocked or stubbed for the purposes of t
 - Database: SQLite via SQLAlchemy ORM
 - Server: Uvicorn (ASGI)
 - Data seeding: Custom seed_data.py script runs on startup
-
----
-
-## Project Structure
-
-`
-airbnb-clone/
-├── backend/
-│   ├── app/
-│   │   ├── main.py            # FastAPI app entry point, CORS, router registration
-│   │   ├── database.py        # SQLAlchemy engine, session, and Base setup
-│   │   ├── models.py          # ORM models: User, Listing, Booking, Review, Wishlist
-│   │   ├── schemas.py         # Pydantic request/response schemas
-│   │   ├── seed_data.py       # Demo data seeder (runs automatically on first startup)
-│   │   └── routers/
-│   │       ├── auth.py        # Login, register, current user, demo user list
-│   │       ├── listings.py    # Listings CRUD, search, filter, availability
-│   │       ├── bookings.py    # Create booking, list user trips, cancel booking
-│   │       ├── host.py        # Host listings, reservations, earnings stats
-│   │       ├── reviews.py     # Add and retrieve listing reviews
-│   │       └── wishlists.py   # Toggle wishlist, get saved listings
-│   ├── airbnb.db              # SQLite database file (auto-created on first run)
-│   ├── requirements.txt
-│   └── venv/
-│
-└── frontend/
-    ├── src/
-    │   ├── app/
-    │   │   ├── page.tsx              # Home page: listing grid, nav tabs, section headers
-    │   │   ├── layout.tsx            # Root layout with font and metadata
-    │   │   ├── globals.css           # Global styles and Tailwind directives
-    │   │   ├── rooms/[id]/page.tsx   # Listing detail page
-    │   │   ├── services/[id]/page.tsx # Services detail page
-    │   │   ├── trips/page.tsx        # My Trips and Coming Soon placeholders
-    │   │   ├── wishlists/page.tsx    # Saved listings page
-    │   │   └── host/page.tsx         # Host dashboard
-    │   ├── components/
-    │   │   ├── Navbar.tsx            # Top navigation bar
-    │   │   ├── SearchCapsule.tsx     # Location/dates/guests search modal
-    │   │   ├── ListingCard.tsx       # Reusable listing card with wishlist toggle
-    │   │   ├── CheckoutModal.tsx     # Multi-step mocked checkout flow
-    │   │   ├── AuthModal.tsx         # Login/signup modal with demo profile switcher
-    │   │   ├── FilterModal.tsx       # Price, property type, amenity filters
-    │   │   ├── CategoryBar.tsx       # Icon navigation bar (All, Homes, Experiences, Services)
-    │   │   ├── ServiceDetailView.tsx # Full-page detail view for service listings
-    │   │   ├── AirbnbLogo.tsx        # SVG logo component
-    │   │   ├── CurrencyModal.tsx     # Currency switcher UI
-    │   │   ├── Footer.tsx            # Site footer
-    │   │   └── PromoModal.tsx        # Promotional popover
-    │   ├── lib/
-    │   │   └── api.ts                # All fetch calls to the backend REST API
-    │   └── types/
-    │       └── index.ts              # TypeScript type definitions matching API schemas
-    ├── package.json
-    ├── tailwind.config.ts
-    └── next.config.ts
-`
 
 ---
 
@@ -201,17 +143,33 @@ On first startup the backend seeds the following demo accounts. Use the "Use a d
 
 ## Architecture Overview
 
-`
-Browser (Next.js 15, React 19, Tailwind CSS)
-     |
-     |  HTTP REST  (JSON)
-     v
-FastAPI backend  (Uvicorn ASGI server, port 8000)
-     |
-     |  SQLAlchemy ORM
-     v
-SQLite database  (backend/airbnb.db)
-`
+```mermaid
+flowchart TD
+    subgraph Browser ["Browser — Next.js 15 / React 19 / Tailwind CSS"]
+        direction TB
+        UI["Pages and Components"]
+        API_LIB["lib/api.ts — HTTP fetch calls"]
+        LS["localStorage — X-User-Id"]
+        UI --> API_LIB
+        LS -. attaches header .-> API_LIB
+    end
+
+    subgraph Backend ["FastAPI Backend — Uvicorn ASGI / port 8000"]
+        direction TB
+        MW["CORS Middleware"]
+        ROUTERS["Routers: auth / listings / bookings / host / reviews / wishlists"]
+        SCHEMAS["Pydantic Schemas — validation"]
+        ORM["SQLAlchemy ORM"]
+        MW --> ROUTERS
+        ROUTERS --> SCHEMAS
+        ROUTERS --> ORM
+    end
+
+    DB[("SQLite — airbnb.db")]
+
+    API_LIB -- "HTTP REST JSON" --> MW
+    ORM -- "SQL queries" --> DB
+```
 
 ### Request flow
 
