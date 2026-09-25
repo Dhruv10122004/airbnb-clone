@@ -56,8 +56,20 @@ export default function ListingCard({
 
         {/* Top Badges */}
         <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
-          {/* Guest Favourite Badge */}
-          {listing.is_guest_favourite ? (
+          {/* Badge: Popular for services, Trending/Original for experiences, Guest favourite for homes */}
+          {listing.property_type === "Service" ? (
+            listing.is_guest_favourite ? (
+              <div className="bg-white/95 backdrop-blur-xs text-[#222222] text-[12px] font-semibold px-2.5 py-1 rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.18)] pointer-events-auto">
+                Popular
+              </div>
+            ) : (
+              <div />
+            )
+          ) : listing.property_type === "Experience" ? (
+            <div className="bg-white/95 backdrop-blur-xs text-[#222222] text-[12px] font-semibold px-2.5 py-1 rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.18)] pointer-events-auto">
+              {listing.category === "originals" ? "✏️ Original" : "Trending"}
+            </div>
+          ) : listing.is_guest_favourite ? (
             <div className="bg-white/95 backdrop-blur-xs text-[#222222] text-[12px] font-semibold px-2.5 py-1 rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.18)] pointer-events-auto">
               Guest favourite
             </div>
@@ -72,11 +84,10 @@ export default function ListingCard({
             className="p-1.5 rounded-full pointer-events-auto transition hover:scale-115 active:scale-90"
           >
             <Heart
-              className={`w-6 h-6 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] ${
-                isWishlisted
+              className={`w-6 h-6 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] ${isWishlisted
                   ? "fill-[#FF385C] text-[#FF385C]"
                   : "fill-black/30 text-white stroke-[2]"
-              }`}
+                }`}
             />
           </button>
         </div>
@@ -107,11 +118,10 @@ export default function ListingCard({
             {images.slice(0, 5).map((_, idx) => (
               <span
                 key={idx}
-                className={`h-1.5 rounded-full transition-all duration-200 ${
-                  idx === currentImgIndex
+                className={`h-1.5 rounded-full transition-all duration-200 ${idx === currentImgIndex
                     ? "w-4 bg-white"
                     : "w-1.5 bg-white/60"
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -119,23 +129,62 @@ export default function ListingCard({
       </div>
 
       {/* Target State: Exactly 2 lines under image */}
-      <Link href={`/rooms/${listing.id}`} className="mt-3 block">
+      <Link href={listing.property_type === "Service" ? `/services/${listing.id}` : `/rooms/${listing.id}`} className="mt-3 block">
         {/* Line 1: Title (no rating here) */}
         <h4 className="font-semibold text-[15px] text-[#222222] truncate leading-snug">
           {listing.title}
         </h4>
 
-        {/* Line 2: Pricing for N nights and rating combined */}
-        <p className="text-[14px] text-[#222222] mt-0.5 flex items-center gap-1">
-          <span className="font-normal text-[#717171]">
-            ₹{totalCalculated.toLocaleString("en-IN")} for {nightsCount} nights
-          </span>
-          <span className="text-[#717171]">·</span>
-          <span className="font-medium text-[#222222] flex items-center gap-0.5">
-            <Star className="w-3.5 h-3.5 fill-black text-black inline" />
-            {ratingFormatted}
-          </span>
-        </p>
+        {/* Line 2: Pricing or service details */}
+        {listing.property_type === "Service" ? (
+          <div>
+            {listing.description?.startsWith("In home") && (
+              <p className="text-[13px] text-[#717171] truncate mt-0.5">
+                {listing.description.split(".")[0]}
+              </p>
+            )}
+            <p className="text-[14px] text-[#222222] mt-0.5 flex items-center gap-1">
+              <span className="font-normal text-[#222222]">
+                From ₹{listing.price_per_night.toLocaleString("en-IN")} / {listing.id === "srv_photo_4" ? "group" : "guest"}
+              </span>
+              {listing.is_guest_favourite && (
+                <>
+                  <span className="text-[#717171]">·</span>
+                  <span className="font-medium text-[#222222] flex items-center gap-0.5">
+                    <Star className="w-3.5 h-3.5 fill-black text-black inline" />
+                    {ratingFormatted}
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+        ) : (
+          <p className="text-[14px] text-[#222222] mt-0.5 flex items-center gap-1">
+            {listing.property_type === "Experience" ? (
+              <>
+                <span className="font-normal text-[#222222]">
+                  From ₹{listing.price_per_night.toLocaleString("en-IN")} / guest
+                </span>
+                <span className="text-[#717171]">·</span>
+                <span className="font-medium text-[#222222] flex items-center gap-0.5">
+                  <Star className="w-3.5 h-3.5 fill-black text-black inline" />
+                  {ratingFormatted}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-normal text-[#717171]">
+                  ₹{totalCalculated.toLocaleString("en-IN")} for {nightsCount} nights
+                </span>
+                <span className="text-[#717171]">·</span>
+                <span className="font-medium text-[#222222] flex items-center gap-0.5">
+                  <Star className="w-3.5 h-3.5 fill-black text-black inline" />
+                  {ratingFormatted}
+                </span>
+              </>
+            )}
+          </p>
+        )}
       </Link>
     </div>
   );

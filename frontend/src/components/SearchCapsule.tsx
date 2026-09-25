@@ -10,6 +10,9 @@ interface SearchCapsuleProps {
     checkOut?: string;
     guests?: number;
   }) => void;
+  activeNavTab?: "all" | "homes" | "experiences" | "services";
+  selectedServiceCategory?: string | null;
+  onSelectServiceCategory?: (cat: string | null) => void;
 }
 
 // Exact destination suggestions from frame_033s.jpg of rec1.mp4
@@ -48,7 +51,12 @@ const SUGGESTED_DESTINATIONS = [
 
 const DAYS_OF_WEEK = ["S", "M", "T", "W", "T", "F", "S"];
 
-export default function SearchCapsule({ onSearch }: SearchCapsuleProps) {
+export default function SearchCapsule({
+  onSearch,
+  activeNavTab,
+  selectedServiceCategory,
+  onSelectServiceCategory,
+}: SearchCapsuleProps) {
   const [activeField, setActiveField] = useState<"where" | "when" | "who" | null>(null);
   const [hoveredField, setHoveredField] = useState<"where" | "when" | "who" | null>(null);
 
@@ -60,6 +68,34 @@ export default function SearchCapsule({ onSearch }: SearchCapsuleProps) {
   const [children, setChildren] = useState(0);
   const [infants, setInfants] = useState(0);
   const [pets, setPets] = useState(0);
+
+  // When tab mode: "dates" or "flexible"
+  const [whenTab, setWhenTab] = useState<"dates" | "flexible">("dates");
+  const [stayDuration, setStayDuration] = useState<"weekend" | "week" | "month">("weekend");
+  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  const [monthScrollIndex, setMonthScrollIndex] = useState(0);
+
+  // 12 upcoming months dynamically computed from current date
+  const upcomingMonths = React.useMemo(() => {
+    const list = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      list.push({
+        id: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+        monthName: d.toLocaleString("en-US", { month: "long" }),
+        year: d.getFullYear(),
+        monthIndex: d.getMonth(),
+      });
+    }
+    return list;
+  }, []);
+
+  const handleToggleMonth = (monthId: string) => {
+    setSelectedMonths((prev) =>
+      prev.includes(monthId) ? prev.filter((m) => m !== monthId) : [...prev, monthId]
+    );
+  };
 
   // Calendar base date
   const [calendarBaseDate, setCalendarBaseDate] = useState(() => {
@@ -93,10 +129,40 @@ export default function SearchCapsule({ onSearch }: SearchCapsuleProps) {
   const totalGuests = adults + children;
 
   const triggerSearch = () => {
+    let effectiveCheckIn = checkIn ? checkIn.toISOString().split("T")[0] : undefined;
+    let effectiveCheckOut = checkOut ? checkOut.toISOString().split("T")[0] : undefined;
+
+    if (whenTab === "flexible" && selectedMonths.length > 0) {
+      const [yearStr, monthStr] = selectedMonths[0].split("-");
+      const year = parseInt(yearStr);
+      const month = parseInt(monthStr) - 1;
+
+      if (stayDuration === "weekend") {
+        const d = new Date(year, month, 1);
+        while (d.getDay() !== 5) {
+          d.setDate(d.getDate() + 1);
+        }
+        const endD = new Date(d);
+        endD.setDate(d.getDate() + 2);
+        effectiveCheckIn = d.toISOString().split("T")[0];
+        effectiveCheckOut = endD.toISOString().split("T")[0];
+      } else if (stayDuration === "week") {
+        const d = new Date(year, month, 1);
+        const endD = new Date(year, month, 8);
+        effectiveCheckIn = d.toISOString().split("T")[0];
+        effectiveCheckOut = endD.toISOString().split("T")[0];
+      } else {
+        const d = new Date(year, month, 1);
+        const endD = new Date(year, month + 1, 0);
+        effectiveCheckIn = d.toISOString().split("T")[0];
+        effectiveCheckOut = endD.toISOString().split("T")[0];
+      }
+    }
+
     onSearch({
       destination: destination.trim() || undefined,
-      checkIn: checkIn ? checkIn.toISOString().split("T")[0] : undefined,
-      checkOut: checkOut ? checkOut.toISOString().split("T")[0] : undefined,
+      checkIn: effectiveCheckIn,
+      checkOut: effectiveCheckOut,
       guests: totalGuests > 0 ? totalGuests : undefined,
     });
     setActiveField(null);
@@ -165,6 +231,25 @@ export default function SearchCapsule({ onSearch }: SearchCapsuleProps) {
   };
 
   const getWhenLabel = () => {
+    if (whenTab === "flexible") {
+      if (selectedMonths.length === 0) {
+        return "Anytime";
+      }
+      const durationText =
+        stayDuration === "weekend" ? "A weekend" : stayDuration === "week" ? "A week" : "A month";
+
+      const monthNames = selectedMonths.map((mId) => {
+        const [yearStr, monthStr] = mId.split("-");
+        const d = new Date(parseInt(yearStr), parseInt(monthStr) - 1, 1);
+        return d.toLocaleString("en-US", { month: "short" });
+      });
+
+      if (monthNames.length === 1) {
+        return `${durationText} in ${monthNames[0]}`;
+      }
+      return `${durationText} in ${monthNames.slice(0, 2).join(", ")}${monthNames.length > 2 ? "..." : ""}`;
+    }
+
     if (checkIn && checkOut) {
       return `${checkIn.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – ${checkOut.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
     }
@@ -228,20 +313,68 @@ export default function SearchCapsule({ onSearch }: SearchCapsuleProps) {
     }
   };
 
+  if (activeNavTab === "services") {
+    return (
+      <div className="w-full flex justify-center py-2 relative z-20">
+        <div className="flex items-center rounded-full transition-all duration-200 bg-white border border-[#DDDDDD] shadow-[0_1px_2px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-md px-4 py-2 gap-3 cursor-pointer">
+          <span className="text-xl select-none pl-1">🛎️</span>
+          <div className="flex items-center gap-4 text-sm">
+            <span className="font-semibold text-[#222222]">
+              {selectedServiceCategory ? "Services in Gurugram" : "Anywhere"}
+            </span>
+            <div className="h-5 w-[1px] bg-[#EBEBEB]" />
+            <span className="font-semibold text-[#222222]">Anytime</span>
+            <div className="h-5 w-[1px] bg-[#EBEBEB]" />
+            <span className={selectedServiceCategory ? "font-semibold text-[#222222]" : "text-[#717171]"}>
+              {selectedServiceCategory
+                ? selectedServiceCategory.charAt(0).toUpperCase() + selectedServiceCategory.slice(1)
+                : "Add service"}
+            </span>
+          </div>
+          <button
+            onClick={() => onSearch({ destination: selectedServiceCategory || undefined })}
+            aria-label="Search services"
+            className="rounded-full bg-[#E00B41] hover:bg-[#D70466] w-9 h-9 flex items-center justify-center text-white ml-2 shadow-sm transition cursor-pointer"
+          >
+            <Search className="w-3.5 h-3.5 stroke-[3]" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div ref={capsuleRef} className="w-full flex justify-center py-2 relative">
+    <>
       {/* 
-        The Capsule:
-        When activeField != null: container is bg-[#EBEBEB],
-        and the active segment is pure white with rounded-full and shadow!
+        Full-screen dim backdrop (frame_027s.jpg / authentic Airbnb UX):
+        Clicking ANY blank space outside gracefully closes the search dropdown.
       */}
+      {activeField && (
+        <div
+          className="fixed inset-0 bg-black/25 z-40 transition-opacity duration-200 cursor-pointer"
+          onClick={() => setActiveField(null)}
+          aria-hidden="true"
+        />
+      )}
+
       <div
-        className={`flex items-center rounded-full transition-all duration-200 max-w-2xl w-full relative ${
-          activeField
-            ? "bg-[#EBEBEB] border border-transparent shadow-[0_6px_20px_rgba(0,0,0,0.1)] p-0"
-            : "bg-white border border-[#DDDDDD] shadow-[0_1px_2px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-md"
+        className={`w-full flex justify-center py-2 relative ${
+          activeField ? "z-50" : "z-20"
         }`}
       >
+        <div ref={capsuleRef} className="relative w-full max-w-2xl flex flex-col items-center">
+          {/* 
+            The Capsule:
+            When activeField != null: container is bg-[#EBEBEB],
+            and the active segment is pure white with rounded-full and shadow!
+          */}
+          <div
+            className={`flex items-center rounded-full transition-all duration-200 w-full relative ${
+              activeField
+                ? "bg-[#EBEBEB] border border-transparent shadow-[0_6px_20px_rgba(0,0,0,0.1)] p-0"
+                : "bg-white border border-[#DDDDDD] shadow-[0_1px_2px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-md"
+            }`}
+          >
         {/* Segment 1: Where */}
         <div
           onClick={() => setActiveField(activeField === "where" ? null : "where")}
@@ -381,105 +514,265 @@ export default function SearchCapsule({ onSearch }: SearchCapsuleProps) {
       )}
 
       {/* ------------------------------------------------------------- */}
-      {/* 1c. "When" Dropdown Panel (Dual-Month Calendar)               */}
+      {/* 1c. "When" Dropdown Panel (Dual-Month Calendar / Flexible)   */}
       {/* ------------------------------------------------------------- */}
       {activeField === "when" && (
-        <div className="absolute top-full inset-x-0 mx-auto mt-3 w-full sm:max-w-[850px] bg-white rounded-[32px] shadow-[0_16px_36px_rgba(0,0,0,0.16)] border border-[#EBEBEB] p-6 sm:p-8 z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[calc(100vw-32px)] sm:w-[850px] max-w-[850px] bg-white rounded-[32px] shadow-[0_16px_36px_rgba(0,0,0,0.16)] border border-[#EBEBEB] p-6 sm:p-8 z-50 animate-in fade-in zoom-in-95 duration-100">
           {/* Top Toggle: Dates / Flexible */}
           <div className="flex justify-center mb-6">
             <div className="inline-flex p-1 bg-[#EBEBEB] rounded-full text-xs font-semibold">
-              <button className="py-2 px-6 rounded-full bg-white text-black shadow-xs">
+              <button
+                type="button"
+                onClick={() => setWhenTab("dates")}
+                className={`py-2 px-6 rounded-full transition-all cursor-pointer ${
+                  whenTab === "dates"
+                    ? "bg-white text-black shadow-xs font-semibold"
+                    : "text-[#717171] hover:text-black font-medium"
+                }`}
+              >
                 Dates
               </button>
-              <button className="py-2 px-6 rounded-full text-[#717171] hover:text-black">
+              <button
+                type="button"
+                onClick={() => setWhenTab("flexible")}
+                className={`py-2 px-6 rounded-full transition-all cursor-pointer ${
+                  whenTab === "flexible"
+                    ? "bg-white text-black shadow-xs font-semibold"
+                    : "text-[#717171] hover:text-black font-medium"
+                }`}
+              >
                 Flexible
               </button>
             </div>
           </div>
 
-          {/* Dual Month Calendar Grids */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-            {/* Far Left Prev Month Chevron */}
-            <button
-              onClick={prevMonths}
-              aria-label="Previous month"
-              className="absolute -top-1 left-0 p-2 rounded-full hover:bg-slate-100 text-[#222222] transition z-10 cursor-pointer"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
+          {whenTab === "flexible" ? (
+            /* Flexible View: Exact Replica of Airbnb's Flexible Picker */
+            <div className="space-y-8 py-2">
+              {/* Question 1: How long would you like to stay? */}
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-[#222222] mb-4">
+                  How long would you like to stay?
+                </h3>
+                <div className="inline-flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setStayDuration("weekend")}
+                    className={`py-2.5 px-6 rounded-full text-sm transition-all cursor-pointer ${
+                      stayDuration === "weekend"
+                        ? "border-2 border-black bg-[#F7F7F7] font-semibold text-black"
+                        : "border border-gray-300 hover:border-black text-[#222222] font-medium"
+                    }`}
+                  >
+                    Weekend
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStayDuration("week")}
+                    className={`py-2.5 px-6 rounded-full text-sm transition-all cursor-pointer ${
+                      stayDuration === "week"
+                        ? "border-2 border-black bg-[#F7F7F7] font-semibold text-black"
+                        : "border border-gray-300 hover:border-black text-[#222222] font-medium"
+                    }`}
+                  >
+                    Week
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStayDuration("month")}
+                    className={`py-2.5 px-6 rounded-full text-sm transition-all cursor-pointer ${
+                      stayDuration === "month"
+                        ? "border-2 border-black bg-[#F7F7F7] font-semibold text-black"
+                        : "border border-gray-300 hover:border-black text-[#222222] font-medium"
+                    }`}
+                  >
+                    Month
+                  </button>
+                </div>
+              </div>
 
-            {/* Far Right Next Month Chevron */}
-            <button
-              onClick={nextMonths}
-              aria-label="Next month"
-              className="absolute -top-1 right-0 p-2 rounded-full hover:bg-slate-100 text-[#222222] transition z-10 cursor-pointer"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+              {/* Question 2: When do you want to go? */}
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-[#222222] mb-5">
+                  When do you want to go?
+                </h3>
 
-            {/* Month 1 */}
-            <MiniCalendar
-              baseDate={calendarBaseDate}
-              checkIn={checkIn}
-              checkOut={checkOut}
-              onDateClick={handleDateClick}
-              isSameDay={isSameDay}
-              isBetweenDates={isBetweenDates}
-            />
+                {/* Horizontal Month Carousel */}
+                <div className="relative flex items-center justify-center">
+                  {/* Left chevron if scrolled */}
+                  {monthScrollIndex > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setMonthScrollIndex((prev) => Math.max(0, prev - 1))}
+                      aria-label="Previous months"
+                      className="absolute -left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-gray-300 bg-white hover:border-black shadow-sm flex items-center justify-center z-10 cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-black" />
+                    </button>
+                  )}
 
-            {/* Month 2 */}
-            <MiniCalendar
-              baseDate={nextMonthDate}
-              checkIn={checkIn}
-              checkOut={checkOut}
-              onDateClick={handleDateClick}
-              isSameDay={isSameDay}
-              isBetweenDates={isBetweenDates}
-            />
-          </div>
+                  {/* 6 Visible Month Cards */}
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 w-full max-w-[740px] transition-all">
+                    {upcomingMonths.slice(monthScrollIndex, monthScrollIndex + 6).map((m) => {
+                      const isSelected = selectedMonths.includes(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => handleToggleMonth(m.id)}
+                          className={`flex flex-col items-center justify-center h-32 rounded-2xl transition-all cursor-pointer ${
+                            isSelected
+                              ? "border-2 border-black bg-[#F7F7F7] shadow-xs"
+                              : "border border-gray-200 hover:border-black bg-white"
+                          }`}
+                        >
+                          <svg
+                            className={`w-7 h-7 mb-2.5 transition-colors ${
+                              isSelected ? "text-black" : "text-[#717171]"
+                            }`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <rect x="3" y="4" width="18" height="18" rx="3" strokeWidth="1.5" />
+                            <line x1="16" y1="2" x2="16" y2="6" strokeWidth="1.5" strokeLinecap="round" />
+                            <line x1="8" y1="2" x2="8" y2="6" strokeWidth="1.5" strokeLinecap="round" />
+                            <line x1="3" y1="10" x2="21" y2="10" strokeWidth="1.5" />
+                          </svg>
+                          <span className="text-[14px] font-semibold text-[#222222]">
+                            {m.monthName}
+                          </span>
+                          <span className="text-[12px] text-[#717171] mt-0.5">
+                            {m.year}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
 
-          {/* Below Calendars: Check-in / Checkout Display Boxes */}
-          <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-[#EBEBEB]">
-            <div className="border border-gray-300 rounded-2xl p-3">
-              <span className="block text-[11px] font-bold uppercase tracking-wider text-[#717171]">
-                Check-in
-              </span>
-              <span className="block text-sm font-semibold text-[#222222] mt-0.5">
-                {formatDateDisplay(checkIn) || "Exact dates"}
-              </span>
+                  {/* Right chevron if more months */}
+                  {monthScrollIndex + 6 < upcomingMonths.length && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setMonthScrollIndex((prev) =>
+                          Math.min(upcomingMonths.length - 6, prev + 1)
+                        )
+                      }
+                      aria-label="Next months"
+                      className="absolute -right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-gray-300 bg-white hover:border-black shadow-sm flex items-center justify-center z-10 cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4 text-black" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Flexible Footer */}
+              <div className="pt-4 flex items-center justify-between border-t border-[#EBEBEB]">
+                <button
+                  type="button"
+                  onClick={() => setSelectedMonths([])}
+                  className="text-xs font-semibold text-[#222222] underline hover:text-black cursor-pointer"
+                >
+                  Reset selection
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveField("who")}
+                  className="text-xs font-semibold text-[#FF385C] underline cursor-pointer"
+                >
+                  Continue to guests →
+                </button>
+              </div>
             </div>
+          ) : (
+            /* Dates View: Dual Month Calendar */
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+                {/* Far Left Prev Month Chevron */}
+                <button
+                  onClick={prevMonths}
+                  aria-label="Previous month"
+                  className="absolute -top-1 left-0 p-2 rounded-full hover:bg-slate-100 text-[#222222] transition z-10 cursor-pointer"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
 
-            <div className="border border-gray-300 rounded-2xl p-3">
-              <span className="block text-[11px] font-bold uppercase tracking-wider text-[#717171]">
-                Checkout
-              </span>
-              <span className="block text-sm font-semibold text-[#222222] mt-0.5">
-                {formatDateDisplay(checkOut) || "Exact dates"}
-              </span>
-            </div>
-          </div>
+                {/* Far Right Next Month Chevron */}
+                <button
+                  onClick={nextMonths}
+                  aria-label="Next month"
+                  className="absolute -top-1 right-0 p-2 rounded-full hover:bg-slate-100 text-[#222222] transition z-10 cursor-pointer"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
 
-          {/* Footer: Clear Dates */}
-          <div className="mt-4 flex items-center justify-between">
-            <button
-              onClick={() => {
-                setCheckIn(null);
-                setCheckOut(null);
-              }}
-              className="text-xs font-semibold text-[#222222] underline hover:text-black cursor-pointer"
-            >
-              Clear dates
-            </button>
+                {/* Month 1 */}
+                <MiniCalendar
+                  baseDate={calendarBaseDate}
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  onDateClick={handleDateClick}
+                  isSameDay={isSameDay}
+                  isBetweenDates={isBetweenDates}
+                />
 
-            {checkIn && checkOut && (
-              <button
-                onClick={() => setActiveField("who")}
-                className="text-xs font-semibold text-[#FF385C] underline cursor-pointer"
-              >
-                Continue to guests →
-              </button>
-            )}
-          </div>
+                {/* Month 2 */}
+                <MiniCalendar
+                  baseDate={nextMonthDate}
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  onDateClick={handleDateClick}
+                  isSameDay={isSameDay}
+                  isBetweenDates={isBetweenDates}
+                />
+              </div>
+
+              {/* Below Calendars: Check-in / Checkout Display Boxes */}
+              <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-[#EBEBEB]">
+                <div className="border border-gray-300 rounded-2xl p-3">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-[#717171]">
+                    Check-in
+                  </span>
+                  <span className="block text-sm font-semibold text-[#222222] mt-0.5">
+                    {formatDateDisplay(checkIn) || "Exact dates"}
+                  </span>
+                </div>
+
+                <div className="border border-gray-300 rounded-2xl p-3">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-[#717171]">
+                    Checkout
+                  </span>
+                  <span className="block text-sm font-semibold text-[#222222] mt-0.5">
+                    {formatDateDisplay(checkOut) || "Exact dates"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Footer: Clear Dates */}
+              <div className="mt-4 flex items-center justify-between">
+                <button
+                  onClick={() => {
+                    setCheckIn(null);
+                    setCheckOut(null);
+                  }}
+                  className="text-xs font-semibold text-[#222222] underline hover:text-black cursor-pointer"
+                >
+                  Clear dates
+                </button>
+
+                {checkIn && checkOut && (
+                  <button
+                    onClick={() => setActiveField("who")}
+                    className="text-xs font-semibold text-[#FF385C] underline cursor-pointer"
+                  >
+                    Continue to guests →
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -589,7 +882,9 @@ export default function SearchCapsule({ onSearch }: SearchCapsuleProps) {
           </div>
         </div>
       )}
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
 
