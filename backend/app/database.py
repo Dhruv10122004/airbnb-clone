@@ -2,9 +2,13 @@ import os
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_FILE = os.path.join(DATABASE_DIR, "..", "airbnb.db")
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.path.abspath(DB_FILE)}"
+# Allow DATABASE_URL override for production (e.g. Render persistent disk).
+# Default falls back to the local SQLite file next to the backend/ directory.
+_DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "airbnb.db")
+SQLALCHEMY_DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    f"sqlite:///{os.path.abspath(_DEFAULT_DB_PATH)}"
+)
 
 # In SQLite, foreign keys are disabled by default. Enable them on connect.
 engine = create_engine(
