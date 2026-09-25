@@ -559,26 +559,6 @@ export default function HomePage() {
             ) : (
               /* DEFAULT CURATED SECTIONS VIEW */
               <>
-                {/* Continue searching banner matching original Airbnb (frame_000s.jpg) */}
-                <div className="flex flex-col items-center justify-center mb-6">
-                  <div
-                    onClick={() => setActiveNavTab("experiences")}
-                    className="inline-flex items-center gap-3 bg-white border border-[#EBEBEB] hover:shadow-md rounded-2xl p-1.5 pr-4 cursor-pointer transition shadow-xs group"
-                  >
-                    <img
-                      src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=120"
-                      alt="Experience thumbnail"
-                      className="w-12 h-12 rounded-xl object-cover"
-                    />
-                    <div className="flex items-center gap-1.5 text-sm font-semibold text-[#222222]">
-                      <span>Continue searching for experiences in New Delhi</span>
-                      <span className="text-[#717171] font-normal">26 Sept</span>
-                      <span className="ml-1 text-sm font-bold group-hover:translate-x-0.5 transition-transform">→</span>
-                    </div>
-                  </div>
-                  <div className="w-full border-b border-[#EBEBEB] mt-7 mb-4" />
-                </div>
-
                 {/* Section 1: Popular homes in Noida */}
                 {noidaHomes.length > 0 && (
                   <div>

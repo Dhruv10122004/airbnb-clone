@@ -208,20 +208,14 @@ export default function Navbar({
             <Globe className="w-4 h-4 text-[#222222]" />
           </button>
 
-          {/* Combined Pill Button for Menu & Profile */}
+          {/* Menu Button (Only 3 lines in a circle, matching real Airbnb) */}
           <div className="relative flex-shrink-0" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center gap-3 border border-[#DDDDDD] hover:shadow-md rounded-full pl-3.5 pr-2 py-1.5 transition cursor-pointer bg-white"
+              aria-label="Main navigation menu"
+              className="w-10 h-10 rounded-full border border-[#DDDDDD] hover:shadow-md flex items-center justify-center transition cursor-pointer bg-white text-[#222222]"
             >
-              <Menu className="w-4 h-4 text-[#222222]" />
-              <div className="w-7 h-7 rounded-full bg-[#717171] text-white flex items-center justify-center font-bold text-xs overflow-hidden">
-                {currentUser?.full_name ? (
-                  currentUser.full_name.charAt(0).toUpperCase()
-                ) : (
-                  <UserIcon className="w-4 h-4 text-white" />
-                )}
-              </div>
+              <Menu className="w-4 h-4 stroke-[2.2]" />
             </button>
 
             {/* Dropdown Menu (Exact Replica of frame_060s.jpg) */}
