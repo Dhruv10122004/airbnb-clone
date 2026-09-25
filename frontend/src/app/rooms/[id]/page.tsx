@@ -12,6 +12,7 @@ import {
   Shield,
   Check,
   X,
+  ChevronLeft,
   ChevronRight,
   ChevronDown,
   CheckCircle2,
@@ -69,6 +70,10 @@ export default function RoomDetailPage() {
   const [guestMenuOpen, setGuestMenuOpen] = useState(false);
   const [selectedSlotIndex, setSelectedSlotIndex] = useState<number>(0);
 
+  // Calendar and amenities interactive state
+  const [calendarMonth, setCalendarMonth] = useState<Date>(new Date(2026, 9, 1));
+  const [showAllAmenities, setShowAllAmenities] = useState<boolean>(false);
+
   // UI state
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -89,6 +94,86 @@ export default function RoomDetailPage() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
+
+  // Check if a date string YYYY-MM-DD is booked
+  const isDateBooked = (dateStr: string) => {
+    if (!listing?.booked_dates) return false;
+    return listing.booked_dates.some((b) => {
+      return dateStr >= b.check_in && dateStr < b.check_out;
+    });
+  };
+
+  const handleDateClick = (dateStr: string) => {
+    if (isDateBooked(dateStr)) return;
+    if (!checkIn || (checkIn && checkOut)) {
+      setCheckIn(dateStr);
+      setCheckOut("");
+    } else if (checkIn && !checkOut) {
+      if (dateStr <= checkIn) {
+        setCheckIn(dateStr);
+      } else {
+        const hasBookedBetween = listing?.booked_dates?.some((b) => {
+          return b.check_in > checkIn && b.check_in < dateStr;
+        });
+        if (hasBookedBetween) {
+          setCheckIn(dateStr);
+        } else {
+          setCheckOut(dateStr);
+        }
+      }
+    }
+  };
+
+  const getMonthDays = (year: number, month: number) => {
+    const firstDay = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const days: { day: number; dateStr: string }[] = [];
+    for (let d = 1; d <= totalDays; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      days.push({ day: d, dateStr });
+    }
+    return { firstDay, days };
+  };
+
+  const getAmenityIcon = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.includes("wifi") || lower.includes("internet")) return <Wifi className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("pool")) return <Waves className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("air") || lower.includes("ac") || lower.includes("cooling")) return <Wind className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("kitchen") || lower.includes("cook")) return <UtensilsCrossed className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("park")) return <Car className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("tv")) return <Tv className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("work") || lower.includes("desk")) return <Briefcase className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("coffee") || lower.includes("breakfast")) return <Coffee className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("security") || lower.includes("camera")) return <ShieldAlert className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("balcony") || lower.includes("patio") || lower.includes("view")) return <Compass className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("hairdryer") || lower.includes("dryer")) return <Wind className="w-5 h-5 text-[#222222]" />;
+    if (lower.includes("alarm") || lower.includes("fire") || lower.includes("grill")) return <Flame className="w-5 h-5 text-[#222222]" />;
+    return <Sparkles className="w-5 h-5 text-[#222222]" />;
+  };
+
+  const fallbackReviews: any[] = [
+    {
+      id: "fb_1",
+      author: {
+        full_name: "Ankesh",
+        avatar_url: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
+      },
+      created_at: "2026-09-10T10:00:00Z",
+      rating_overall: 5.0,
+      comment: "It was a super comfy stay with vintage vibe. Location is great, close to mall and restaurants. Surely in my wish-list to come back.",
+    },
+    {
+      id: "fb_2",
+      author: {
+        full_name: "Shriya",
+        avatar_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",
+      },
+      created_at: "2026-09-08T10:00:00Z",
+      rating_overall: 5.0,
+      comment: "The place was soo good and clean. Exactly how the host described and presented. Thank you for the wonderful and smooth stay.",
+    },
+  ];
 
   const loadData = async () => {
     try {
@@ -978,151 +1063,161 @@ export default function RoomDetailPage() {
                 <div id="amenities" className="py-2 border-b border-[#EBEBEB]">
                   <h3 className="text-[22px] font-semibold text-[#222222] mb-6">What this place offers</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-base text-[#222222]">
-                    <div className="flex items-center gap-4">
-                      <Wind className="w-6 h-6 text-[#222222]" />
-                      <span>Air conditioning</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Compass className="w-6 h-6 text-[#222222]" />
-                      <span>Private patio or balcony</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Wind className="w-6 h-6 text-[#222222]" />
-                      <span>Hairdryer</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Coffee className="w-6 h-6 text-[#222222]" />
-                      <span>Microwave</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <ShieldAlert className="w-6 h-6 text-[#222222]" />
-                      <span>Exterior security cameras on property</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Flame className="w-6 h-6 text-[#222222]" />
-                      <span>Carbon monoxide alarm</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <UtensilsCrossed className="w-6 h-6 text-[#222222]" />
-                      <span>Kitchen</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Wifi className="w-6 h-6 text-[#222222]" />
-                      <span>Fast wifi (300 Mbps)</span>
-                    </div>
+                    {(listing.amenities && listing.amenities.length > 0
+                      ? listing.amenities
+                      : [
+                          "Air conditioning",
+                          "Private patio or balcony",
+                          "Hairdryer",
+                          "Microwave",
+                          "Kitchen",
+                          "Wifi",
+                          "Free parking on premises",
+                          "Hot water",
+                        ]
+                    )
+                      .slice(0, showAllAmenities ? undefined : 8)
+                      .map((amenity, idx) => (
+                        <div key={idx} className="flex items-center gap-4">
+                          {getAmenityIcon(amenity)}
+                          <span>{amenity}</span>
+                        </div>
+                      ))}
                   </div>
 
-                  <button
-                    onClick={() => alert("Full 37 amenities list:\n• Wifi\n• AC\n• Kitchen\n• Pool\n• Elevator\n• Free parking\n• Washing machine\n• 55-inch HDTV\n• Sound system\n• Hair dryer\n• Coffee maker\n• Iron\n• Dedicated workspace\n• Private balcony\n• Hot water\n• Security cameras")}
-                    className="mt-8 border border-black hover:bg-[#F7F7F7] text-[#222222] font-semibold text-base px-6 py-3.5 rounded-xl transition cursor-pointer"
-                  >
-                    Show all 37 amenities
-                  </button>
+                  {(listing.amenities?.length || 8) > 8 && (
+                    <button
+                      onClick={() => setShowAllAmenities(!showAllAmenities)}
+                      className="mt-8 border border-black hover:bg-[#F7F7F7] text-[#222222] font-semibold text-base px-6 py-3.5 rounded-xl transition cursor-pointer"
+                    >
+                      {showAllAmenities ? "Show fewer amenities" : `Show all ${listing.amenities?.length} amenities`}
+                    </button>
+                  )}
                 </div>
 
                 {/* Calendar */}
                 <div className="py-2">
-                  <h3 className="text-[22px] font-semibold text-[#222222]">
-                    {calculateTotals ? calculateTotals.nights : 2} nights in {listing.city}
-                  </h3>
-                  <p className="text-sm text-[#717171] mt-1 mb-6">
-                    9 Oct 2026 – 11 Oct 2026
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-[22px] font-semibold text-[#222222]">
+                      {calculateTotals ? `${calculateTotals.nights} nights in ${listing.city}` : `Select dates in ${listing.city}`}
+                    </h3>
+                    {(checkIn || checkOut) && (
+                      <button
+                        onClick={() => {
+                          setCheckIn("");
+                          setCheckOut("");
+                        }}
+                        className="text-xs font-semibold underline text-[#222222] hover:text-[#717171] cursor-pointer"
+                      >
+                        Clear dates
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-sm text-[#717171] mb-6">
+                    {checkIn && checkOut
+                      ? `${new Date(checkIn).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} – ${new Date(checkOut).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                      : checkIn
+                      ? `Check-in: ${new Date(checkIn).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} (Select checkout date)`
+                      : "Minimum stay: 1 night"}
                   </p>
 
                   <div className="border border-[#EBEBEB] rounded-2xl p-6 bg-white shadow-xs">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div>
-                        <div className="text-center font-bold text-sm text-[#222222] mb-4">
-                          October 2026
-                        </div>
-                        <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-[#717171] mb-2">
-                          <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-                        </div>
-                        <div className="grid grid-cols-7 gap-1 text-center text-xs">
-                          <span className="p-2 text-gray-300"></span>
-                          <span className="p-2 text-gray-300"></span>
-                          <span className="p-2 text-gray-300"></span>
-                          <span className="p-2 text-gray-300"></span>
-                          <span className="p-2 text-gray-400">1</span>
-                          <span className="p-2 text-gray-400">2</span>
-                          <span className="p-2 text-gray-400">3</span>
-                          <span className="p-2 text-gray-400">4</span>
-                          <span className="p-2 text-gray-400">5</span>
-                          <span className="p-2 text-gray-400">6</span>
-                          <span className="p-2 text-gray-400">7</span>
-                          <span className="p-2 text-gray-400">8</span>
-                          <button
-                            onClick={() => setCheckIn("2026-10-09")}
-                            className="p-2 bg-black text-white font-bold rounded-full cursor-pointer"
-                          >
-                            9
-                          </button>
-                          <button
-                            onClick={() => {}}
-                            className="p-2 bg-neutral-100 text-black font-semibold rounded-none cursor-pointer"
-                          >
-                            10
-                          </button>
-                          <button
-                            onClick={() => setCheckOut("2026-10-11")}
-                            className="p-2 bg-black text-white font-bold rounded-full cursor-pointer"
-                          >
-                            11
-                          </button>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">12</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">13</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">14</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">15</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">16</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">17</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">18</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">19</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">20</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">21</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">22</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">23</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">24</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">25</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">26</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">27</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">28</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">29</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">30</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">31</span>
-                        </div>
-                      </div>
+                    {/* Month navigation header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <button
+                        onClick={() => {
+                          setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+                        }}
+                        className="p-2 rounded-full border border-gray-200 hover:border-black transition text-[#222222] cursor-pointer"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <span className="text-xs text-[#717171] font-medium">Click a date to select check-in and checkout</span>
+                      <button
+                        onClick={() => {
+                          setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+                        }}
+                        className="p-2 rounded-full border border-gray-200 hover:border-black transition text-[#222222] cursor-pointer"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
 
-                      <div>
-                        <div className="text-center font-bold text-sm text-[#222222] mb-4">
-                          November 2026
-                        </div>
-                        <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-[#717171] mb-2">
-                          <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-                        </div>
-                        <div className="grid grid-cols-7 gap-1 text-center text-xs">
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">1</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">2</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">3</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">4</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">5</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">6</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">7</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">8</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">9</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">10</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">11</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">12</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">13</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">14</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">15</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">16</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">17</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">18</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">19</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">20</span>
-                          <span className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer">21</span>
-                        </div>
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Month 1 & Month 2 */}
+                      {[0, 1].map((offset) => {
+                        const mDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + offset, 1);
+                        const { firstDay, days } = getMonthDays(mDate.getFullYear(), mDate.getMonth());
+                        const monthName = mDate.toLocaleString("en-US", { month: "long", year: "numeric" });
+
+                        return (
+                          <div key={offset}>
+                            <div className="text-center font-bold text-sm text-[#222222] mb-4">
+                              {monthName}
+                            </div>
+                            <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-[#717171] mb-2">
+                              <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                            </div>
+                            <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                              {Array.from({ length: firstDay }).map((_, i) => (
+                                <div key={`empty_${offset}_${i}`} className="p-2" />
+                              ))}
+                              {days.map((item) => {
+                                const isBooked = isDateBooked(item.dateStr);
+                                const isStart = checkIn === item.dateStr;
+                                const isEnd = checkOut === item.dateStr;
+                                const inRange = checkIn && checkOut && item.dateStr > checkIn && item.dateStr < checkOut;
+
+                                if (isBooked) {
+                                  return (
+                                    <div
+                                      key={item.dateStr}
+                                      title="Booked"
+                                      className="p-2 text-gray-300 line-through select-none"
+                                    >
+                                      {item.day}
+                                    </div>
+                                  );
+                                }
+
+                                if (isStart || isEnd) {
+                                  return (
+                                    <button
+                                      key={item.dateStr}
+                                      onClick={() => handleDateClick(item.dateStr)}
+                                      className="p-2 bg-black text-white font-bold rounded-full cursor-pointer shadow-xs"
+                                    >
+                                      {item.day}
+                                    </button>
+                                  );
+                                }
+
+                                if (inRange) {
+                                  return (
+                                    <button
+                                      key={item.dateStr}
+                                      onClick={() => handleDateClick(item.dateStr)}
+                                      className="p-2 bg-neutral-100 text-black font-semibold rounded-none cursor-pointer hover:bg-neutral-200"
+                                    >
+                                      {item.day}
+                                    </button>
+                                  );
+                                }
+
+                                return (
+                                  <button
+                                    key={item.dateStr}
+                                    onClick={() => handleDateClick(item.dateStr)}
+                                    className="p-2 hover:bg-neutral-100 rounded-full cursor-pointer transition text-[#222222]"
+                                  >
+                                    {item.day}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -1394,66 +1489,31 @@ export default function RoomDetailPage() {
 
               {/* 2-Column Reviews */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10 py-4">
-                {[
-                  {
-                    id: "r1",
-                    name: "Ankesh",
-                    tenure: "3 years on Airbnb",
-                    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
-                    date: "2 weeks ago",
-                    text: "It was a super comfy stay with vintage vibe. Location is great, close to mall and restaurants. Surely in my wish-list to come back.",
-                  },
-                  {
-                    id: "r2",
-                    name: "Shriya",
-                    tenure: "1 year on Airbnb",
-                    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",
-                    date: "2 weeks ago",
-                    text: "The place was soo good and clean. Exactly how the host described and presented. Thank you for the wonderful and smooth stay.",
-                  },
-                  {
-                    id: "r3",
-                    name: "Sachin",
-                    tenure: "5 years on Airbnb",
-                    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
-                    date: "3 weeks ago",
-                    text: "I loved it. Very quiet and serene atmosphere with great antique lighting and aesthetic decor.",
-                  },
-                  {
-                    id: "r4",
-                    name: "Gaurav",
-                    tenure: "7 years on Airbnb",
-                    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100",
-                    date: "August 2026",
-                    text: "The place was very cossy and comfortable we had a great during our stay. The host was very responsive and helpful.",
-                  },
-                ].map((rev) => (
+                {(listing.reviews && listing.reviews.length > 0 ? listing.reviews : fallbackReviews).map((rev) => (
                   <div key={rev.id} className="space-y-3">
                     <div className="flex items-center gap-3">
                       <img
-                        src={rev.avatar}
-                        alt={rev.name}
+                        src={rev.author?.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"}
+                        alt={rev.author?.full_name || "Guest"}
                         className="w-12 h-12 rounded-full object-cover"
                       />
                       <div>
-                        <h4 className="text-base font-bold text-[#222222]">{rev.name}</h4>
-                        <p className="text-xs text-[#717171]">{rev.tenure}</p>
+                        <h4 className="text-base font-bold text-[#222222]">{rev.author?.full_name || rev.author?.email || "Guest"}</h4>
+                        <p className="text-xs text-[#717171]">
+                          {new Date(rev.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                        </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-xs text-[#222222]">
-                      <span className="font-bold">★★★★★</span>
-                      <span>·</span>
-                      <span className="text-[#717171]">{rev.date}</span>
+                      <span className="font-bold flex items-center gap-0.5 text-amber-500">
+                        ★ {rev.rating_overall ? rev.rating_overall.toFixed(1) : "5.0"}
+                      </span>
                     </div>
 
                     <p className="text-sm text-[#222222] leading-relaxed">
-                      {rev.text}
+                      {rev.comment}
                     </p>
-
-                    <button className="text-sm font-semibold underline text-[#222222] cursor-pointer">
-                      Show more
-                    </button>
                   </div>
                 ))}
               </div>
