@@ -190,55 +190,82 @@ export default function Navbar({
           </div>
         )}
 
-        {/* Right: Log in or sign up + Globe Button + Pill Hamburger */}
+        {/* Right: Log in or sign up / Become a host + Avatar + Hamburger */}
         <div className="flex items-center gap-2">
-          {/* Log in or sign up button (when logged out, matches real Airbnb) */}
           {!currentUser ? (
-            <button
-              onClick={onOpenAuthModal}
-              className="text-[14px] font-semibold text-[#222222] hover:bg-[#F7F7F7] px-3.5 py-2 rounded-full transition cursor-pointer whitespace-nowrap"
-            >
-              Log in or sign up
-            </button>
+            <>
+              {/* Log in or sign up button (when logged out, matches real Airbnb) */}
+              <button
+                onClick={onOpenAuthModal}
+                className="text-[14px] font-semibold text-[#222222] hover:bg-[#F7F7F7] px-3.5 py-2 rounded-full transition cursor-pointer whitespace-nowrap"
+              >
+                Log in or sign up
+              </button>
+
+              {/* Globe Button (only shown when logged out) */}
+              <button
+                onClick={onOpenCurrencyModal}
+                aria-label="Language & Currency"
+                className="w-9 h-9 rounded-full hover:bg-[#F7F7F7] text-[#222222] flex items-center justify-center transition cursor-pointer flex-shrink-0"
+              >
+                <Globe className="w-4 h-4 text-[#222222]" />
+              </button>
+            </>
           ) : (
-            <Link
-              href="/host"
-              className="text-[14px] font-semibold text-[#222222] hover:bg-[#F7F7F7] px-3.5 py-2 rounded-full transition cursor-pointer whitespace-nowrap hidden sm:block"
-            >
-              {currentUser.role === "host" ? "Manage listings" : "Switch to hosting"}
-            </Link>
+            <>
+              {/* Become a host button (matches screenshot exactly) */}
+              <Link
+                href="/host"
+                className="text-[14px] font-semibold text-[#222222] hover:bg-[#F7F7F7] px-3.5 py-2 rounded-full transition cursor-pointer whitespace-nowrap"
+              >
+                Become a host
+              </Link>
+
+              {/* User Avatar Initial (Lavender circle with 'D' or user initial, matching screenshot) */}
+              <Link
+                href="/profile"
+                className="w-8 h-8 rounded-full bg-[#ECE9FE] text-[#5B4DF5] font-bold text-sm flex items-center justify-center hover:opacity-90 transition cursor-pointer flex-shrink-0 shadow-2xs"
+                title="View Profile"
+              >
+                {currentUser.full_name ? currentUser.full_name.charAt(0).toUpperCase() : "D"}
+              </Link>
+            </>
           )}
 
-          {/* Globe Button */}
-          <button
-            onClick={onOpenCurrencyModal}
-            aria-label="Language & Currency"
-            className="w-9 h-9 rounded-full hover:bg-[#F7F7F7] text-[#222222] flex items-center justify-center transition cursor-pointer flex-shrink-0"
-          >
-            <Globe className="w-4 h-4 text-[#222222]" />
-          </button>
-
-          {/* Menu Button (Only 3 lines in a circle, matching real Airbnb) */}
+          {/* Menu Button (Only 3 lines in a circle, matching real Airbnb screenshot) */}
           <div className="relative flex-shrink-0" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Main navigation menu"
-              className="w-10 h-10 rounded-full border border-[#DDDDDD] hover:shadow-md flex items-center justify-center transition cursor-pointer bg-white text-[#222222]"
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-pointer ${
+                currentUser
+                  ? "bg-[#EFEFEF] hover:bg-[#E5E5E5] text-[#222222]"
+                  : "border border-[#DDDDDD] hover:shadow-md bg-white text-[#222222]"
+              }`}
             >
               <Menu className="w-4 h-4 stroke-[2.2]" />
             </button>
 
-            {/* Dropdown Menu (Exact Replica of frame_060s.jpg) */}
+            {/* Dropdown Menu */}
             {menuOpen && (
               <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.15)] border border-[#EBEBEB] py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
                 {currentUser ? (
-                  // Logged In Menu — matches shared screenshot exactly
+                  // Logged In Menu
                   <>
                     {/* Name + email header */}
                     <div className="px-4 py-3 border-b border-[#EBEBEB]">
                       <p className="text-[15px] font-semibold text-[#222222] truncate">{currentUser.full_name}</p>
                       <p className="text-sm text-[#717171] truncate">{currentUser.email}</p>
                     </div>
+
+                    {/* Profile */}
+                    <Link
+                      href="/profile"
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-4 py-3 text-sm font-semibold text-[#222222] hover:bg-[#F7F7F7]"
+                    >
+                      Profile
+                    </Link>
 
                     {/* Trips */}
                     <Link

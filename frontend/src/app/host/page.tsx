@@ -34,6 +34,8 @@ import {
   Sparkles,
   ArrowRight,
   UserCheck,
+  Search,
+  Navigation,
 } from "lucide-react";
 
 export default function HostDashboardPage() {
@@ -51,6 +53,8 @@ export default function HostDashboardPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [addressInput, setAddressInput] = useState("");
 
   // Form State
   const [title, setTitle] = useState("");
@@ -155,6 +159,16 @@ export default function HostDashboardPage() {
     ]);
     setSelectedAmenities(["Wifi", "Kitchen", "Air conditioning", "Free parking on premises"]);
     setIsModalOpen(true);
+  };
+
+  const handleAddressSubmit = (addr?: string) => {
+    const chosen = addr || addressInput || "Sector 75, Noida";
+    openCreateModal();
+    setAddress(chosen);
+    if (chosen.toLowerCase().includes("noida")) setCity("Noida");
+    else if (chosen.toLowerCase().includes("gurugram") || chosen.toLowerCase().includes("gurgaon")) setCity("Gurgaon");
+    else if (chosen.toLowerCase().includes("delhi")) setCity("New Delhi");
+    setIsAddressModalOpen(false);
   };
 
   // Open Edit Modal
@@ -308,7 +322,45 @@ export default function HostDashboardPage() {
       />
 
       <main className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-10 flex-1 w-full space-y-8">
-        
+        {/* Set up your Airbnb listing Hero (Matches shared screenshot) */}
+        <div className="bg-white rounded-3xl p-8 sm:p-12 border border-[#EBEBEB] shadow-xs flex flex-col lg:flex-row items-center justify-between gap-10">
+          <div className="flex-1 max-w-xl space-y-6">
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-[#222222] tracking-tight leading-[1.15]">
+              Set up your Airbnb listing
+            </h2>
+            <p className="text-base text-[#717171]">
+              It&apos;s easy to create a great listing – let&apos;s start with your address.
+            </p>
+
+            {/* Address Pill Input Button */}
+            <div
+              onClick={() => setIsAddressModalOpen(true)}
+              className="flex items-center gap-3 border border-neutral-300 hover:border-black rounded-full px-5 py-3.5 shadow-2xs hover:shadow-md transition cursor-pointer bg-white max-w-md"
+            >
+              <Search className="w-5 h-5 text-neutral-400 stroke-[2.2]" />
+              <span className="text-sm font-medium text-neutral-400">
+                Enter your address
+              </span>
+            </div>
+
+            <p className="text-xs text-[#717171]">
+              Not listing a home? Host an{" "}
+              <Link href="/services" className="font-semibold text-black underline">
+                experience or service
+              </Link>
+              .
+            </p>
+          </div>
+
+          <div className="w-full lg:w-[480px] h-[320px] rounded-[36px] overflow-hidden shadow-md flex-shrink-0">
+            <img
+              src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80"
+              alt="Pool villa listing preview"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+
         {/* Top Header & Host Identity */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#EBEBEB]">
           <div>
@@ -874,6 +926,65 @@ export default function HostDashboardPage() {
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ──────────────────────────────────────────────────── */}
+      {/* Enter your address Modal (Matches shared screenshot) */}
+      {/* ──────────────────────────────────────────────────── */}
+      {isAddressModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-neutral-200 overflow-hidden flex flex-col p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-[#222222]">Enter your address</h3>
+              <button
+                type="button"
+                onClick={() => setIsAddressModalOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="relative">
+              <Search className="w-4 h-4 text-neutral-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Enter your address"
+                value={addressInput}
+                onChange={(e) => setAddressInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddressSubmit();
+                }}
+                className="w-full pl-11 pr-4 py-3 rounded-full border border-neutral-300 focus:outline-hidden focus:border-black text-sm"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleAddressSubmit("Sector 75, Noida, Uttar Pradesh")}
+              className="flex items-center gap-3 p-3 rounded-2xl hover:bg-neutral-50 transition cursor-pointer text-left w-full border border-transparent hover:border-neutral-200"
+            >
+              <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0 text-neutral-700">
+                <Navigation className="w-5 h-5 -rotate-45" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#222222]">Use my current location</p>
+                <p className="text-xs text-[#717171]">Noida, Uttar Pradesh</p>
+              </div>
+            </button>
+
+            {addressInput.trim() && (
+              <button
+                type="button"
+                onClick={() => handleAddressSubmit()}
+                className="w-full py-3 rounded-full bg-[#FF385C] hover:bg-[#E00B41] text-white font-bold text-sm transition cursor-pointer shadow-xs"
+              >
+                Continue with this address
+              </button>
+            )}
           </div>
         </div>
       )}
