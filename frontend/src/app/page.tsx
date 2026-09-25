@@ -381,18 +381,23 @@ export default function HomePage() {
         onSelectNavTab={setActiveNavTab}
       />
 
-      {/* 2. Search Capsule */}
-      <div className="bg-white border-b border-[#EBEBEB] py-3.5 px-4 flex justify-center">
+      {/* 2. Search Capsule (Pure white with soft shadow gradient fading over 24px) */}
+      <div className="relative bg-white py-3.5 px-4 flex justify-center z-30">
         <SearchCapsule
           onSearch={setSearchParams}
           activeNavTab={activeNavTab}
           selectedServiceCategory={selectedServiceCategory}
           onSelectServiceCategory={setSelectedServiceCategory}
         />
+        {/* Soft shadow gradient transition fading into white over 24px */}
+        <div
+          className="absolute left-0 right-0 -bottom-6 h-6 pointer-events-none bg-gradient-to-b from-black/[0.06] to-transparent z-20"
+          aria-hidden="true"
+        />
       </div>
 
-      {/* 3. Main Content with warm off-white #FAFAFA background for depth */}
-      <div className="bg-[#FAFAFA] flex-1 w-full">
+      {/* 3. Main Content (Pure White #FFFFFF) */}
+      <div className="bg-white flex-1 w-full relative z-10">
         <main className="max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-16 pt-8 pb-16 flex-1 w-full">
 
         {/* ======================================================== */}
