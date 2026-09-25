@@ -43,6 +43,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import CurrencyModal from "@/components/CurrencyModal";
+import CheckoutModal from "@/components/CheckoutModal";
 import ServiceDetailView from "@/components/ServiceDetailView";
 import { ListingDetail, User } from "@/types";
 import {
@@ -64,8 +65,8 @@ export default function RoomDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Dates state
-  const [checkIn, setCheckIn] = useState<string>("2026-10-09");
-  const [checkOut, setCheckOut] = useState<string>("2026-10-11");
+  const [checkIn, setCheckIn] = useState<string>("2026-10-12");
+  const [checkOut, setCheckOut] = useState<string>("2026-10-15");
   const [guestCount, setGuestCount] = useState<number>(1);
   const [guestMenuOpen, setGuestMenuOpen] = useState(false);
   const [selectedSlotIndex, setSelectedSlotIndex] = useState<number>(0);
@@ -79,6 +80,7 @@ export default function RoomDetailPage() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [scrolledPastHero, setScrolledPastHero] = useState(false);
   const [activeTab, setActiveTab] = useState<"photos" | "amenities" | "reviews" | "location">("photos");
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -104,7 +106,17 @@ export default function RoomDetailPage() {
   };
 
   const handleDateClick = (dateStr: string) => {
-    if (isDateBooked(dateStr)) return;
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (dateStr < todayStr) {
+      setBookingError("Cannot select past dates");
+      return;
+    }
+    if (isDateBooked(dateStr)) {
+      setBookingError("This date is already reserved. Please choose available dates.");
+      return;
+    }
+    setBookingError(null);
+
     if (!checkIn || (checkIn && checkOut)) {
       setCheckIn(dateStr);
       setCheckOut("");
@@ -116,12 +128,39 @@ export default function RoomDetailPage() {
           return b.check_in > checkIn && b.check_in < dateStr;
         });
         if (hasBookedBetween) {
+          setBookingError("Selected date range includes already reserved dates. Please choose a continuous available range.");
           setCheckIn(dateStr);
         } else {
           setCheckOut(dateStr);
         }
       }
     }
+  };
+
+  const validateBooking = (): string | null => {
+    if (!listing) return "Listing details not loaded yet";
+    if (!checkIn || !checkOut) return "Please choose your check-in and checkout dates.";
+    if (checkIn >= checkOut) return "Check-in date must be before checkout date.";
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (checkIn < todayStr) return "Check-in date cannot be in the past.";
+
+    if (guestCount > listing.max_guests) {
+      return `This listing accommodates a maximum of ${listing.max_guests} guests.`;
+    }
+    if (guestCount < 1) {
+      return "Please select at least 1 guest.";
+    }
+
+    if (listing.booked_dates && listing.booked_dates.length > 0) {
+      const overlap = listing.booked_dates.find((b) => {
+        return checkIn < b.check_out && checkOut > b.check_in;
+      });
+      if (overlap) {
+        return `Selected dates overlap with an existing reservation (${overlap.check_in} to ${overlap.check_out}). Please choose different dates.`;
+      }
+    }
+    return null;
   };
 
   const getMonthDays = (year: number, month: number) => {
@@ -231,24 +270,42 @@ export default function RoomDetailPage() {
     return { nights, basePrice, cleaningFee, serviceFee, total };
   }, [listing, checkIn, checkOut]);
 
-  const handleReserve = async () => {
-    if (!listing) return;
-    setBookingLoading(true);
-    setBookingError(null);
-    try {
-      const res = await createBooking({
-        listing_id: listing.id,
-        check_in: checkIn,
-        check_out: checkOut,
-        guest_count: guestCount,
-      });
-      setConfirmedBooking(res);
-      setIsSuccessModalOpen(true);
-    } catch (err: any) {
-      setBookingError(err.message || "Booking reservation failed");
-    } finally {
-      setBookingLoading(false);
+  const handleReserveClick = () => {
+    const errorMsg = validateBooking();
+    if (errorMsg) {
+      setBookingError(errorMsg);
+      const bookingCard = document.getElementById("booking-card");
+      if (bookingCard) {
+        bookingCard.scrollIntoView({ behavior: "smooth" });
+      }
+      return;
     }
+    setBookingError(null);
+
+    // If user is not logged in, prompt authentication
+    if (!currentUser) {
+      setIsAuthOpen(true);
+      return;
+    }
+
+    setIsCheckoutOpen(true);
+  };
+
+  const handleConfirmBooking = async (paymentMethod: string) => {
+    if (!listing) throw new Error("Listing not found");
+    const errorMsg = validateBooking();
+    if (errorMsg) throw new Error(errorMsg);
+
+    const booking = await createBooking({
+      listing_id: listing.id,
+      check_in: checkIn,
+      check_out: checkOut,
+      guest_count: guestCount,
+    });
+
+    // Re-fetch listing to immediately block booked dates on calendar!
+    await loadData();
+    return booking;
   };
 
   const handleAddReview = async (e: React.FormEvent) => {
@@ -712,7 +769,7 @@ export default function RoomDetailPage() {
                   </div>
 
                   <button
-                    onClick={handleReserve}
+                    onClick={handleReserveClick}
                     disabled={bookingLoading}
                     className="bg-[#E00B41] hover:bg-[#D70466] text-white text-sm font-bold py-2.5 px-6 rounded-full shadow-md transition cursor-pointer disabled:opacity-50"
                   >
@@ -750,7 +807,7 @@ export default function RoomDetailPage() {
 
                 {/* Primary CTA */}
                 <button
-                  onClick={handleReserve}
+                  onClick={handleReserveClick}
                   disabled={bookingLoading}
                   className="w-full bg-[#E00B41] hover:bg-[#D70466] text-white font-bold py-3.5 rounded-xl shadow-md hover:shadow-lg transition cursor-pointer disabled:opacity-50"
                 >
@@ -817,7 +874,7 @@ export default function RoomDetailPage() {
                       if (widget) {
                         widget.scrollIntoView({ behavior: "smooth", block: "center" });
                       } else {
-                        handleReserve();
+                        handleReserveClick();
                       }
                     }}
                     className="bg-[#E00B41] hover:bg-[#D70466] text-white font-semibold text-sm px-7 py-3 rounded-xl shadow-md transition cursor-pointer"
@@ -1297,43 +1354,45 @@ export default function RoomDetailPage() {
                         </button>
 
                         {guestMenuOpen && (
-                          <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[#DDDDDD] rounded-xl shadow-lg p-3 z-30 space-y-2">
-                            {[1, 2, 3, 4].map((n) => (
-                              <button
-                                key={n}
-                                type="button"
-                                onClick={() => {
-                                  setGuestCount(n);
-                                  setGuestMenuOpen(false);
-                                }}
-                                className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                                  guestCount === n ? "bg-neutral-100" : "hover:bg-neutral-50"
-                                }`}
-                              >
-                                {n} {n === 1 ? "guest" : "guests"}
-                              </button>
-                            ))}
+                          <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[#DDDDDD] rounded-xl shadow-lg p-2 z-30 max-h-48 overflow-y-auto space-y-1">
+                            {Array.from({ length: Math.min(Math.max(listing.max_guests || 4, 1), 16) }).map((_, idx) => {
+                              const n = idx + 1;
+                              return (
+                                <button
+                                  key={n}
+                                  type="button"
+                                  onClick={() => {
+                                    setGuestCount(n);
+                                    setGuestMenuOpen(false);
+                                  }}
+                                  className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                                    guestCount === n ? "bg-neutral-100 text-black" : "hover:bg-neutral-50 text-[#222222]"
+                                  }`}
+                                >
+                                  {n} {n === 1 ? "guest" : "guests"}
+                                </button>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
                     </div>
 
                     <div className="bg-[#F7F7F7] text-[#222222] text-xs font-medium py-2 px-3 rounded-lg text-center">
-                      Free cancellation before 8 October
+                      Free cancellation before check-in
                     </div>
 
                     {bookingError && (
-                      <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-medium">
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-medium leading-relaxed">
                         {bookingError}
                       </div>
                     )}
 
                     <button
-                      onClick={handleReserve}
-                      disabled={bookingLoading}
-                      className="w-full bg-[#E00B41] hover:bg-[#D70466] text-white font-semibold py-3.5 rounded-xl text-base shadow-md transition cursor-pointer disabled:opacity-50"
+                      onClick={handleReserveClick}
+                      className="w-full bg-[#E00B41] hover:bg-[#D70466] text-white font-semibold py-3.5 rounded-xl text-base shadow-md transition cursor-pointer"
                     >
-                      {bookingLoading ? "Reserving..." : "Reserve"}
+                      Reserve
                     </button>
 
                     <p className="text-xs text-[#717171] text-center">
@@ -1758,52 +1817,19 @@ export default function RoomDetailPage() {
         </div>
       )}
 
-      {/* Reservation Confirmation Modal */}
-      {isSuccessModalOpen && confirmedBooking && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-7 h-7" />
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-[#222222]">Stay Confirmed!</h3>
-              <p className="text-xs text-[#717171] mt-1">
-                Your reservation at <span className="font-semibold text-black">{listing.title}</span> has been confirmed.
-              </p>
-            </div>
-
-            <div className="bg-[#F7F7F7] rounded-2xl p-4 space-y-2 text-xs text-[#222222]">
-              <div className="flex justify-between">
-                <span className="text-[#717171]">Reservation ID</span>
-                <span className="font-mono font-semibold">{confirmedBooking.id.slice(0, 8)}...</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#717171]">Dates</span>
-                <span className="font-semibold">{confirmedBooking.check_in} → {confirmedBooking.check_out} ({confirmedBooking.total_nights} nights)</span>
-              </div>
-              <div className="flex justify-between text-sm font-bold pt-2 border-t border-gray-200">
-                <span>Total Amount</span>
-                <span className="text-emerald-700">₹{confirmedBooking.total_price.toLocaleString("en-IN")}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.push("/trips")}
-                className="flex-1 bg-black text-white py-3 rounded-xl text-xs font-bold hover:bg-neutral-800 transition cursor-pointer"
-              >
-                View My Trips
-              </button>
-              <button
-                onClick={() => setIsSuccessModalOpen(false)}
-                className="px-5 py-3 border border-gray-300 rounded-xl text-xs font-semibold hover:border-black transition cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Checkout and Mocked Payment Modal */}
+      {isCheckoutOpen && listing && calculateTotals && (
+        <CheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          listing={listing}
+          checkIn={checkIn}
+          checkOut={checkOut}
+          guestCount={guestCount}
+          totals={calculateTotals}
+          currentUser={currentUser}
+          onConfirmBooking={handleConfirmBooking}
+        />
       )}
 
       {/* Auth Modal */}
