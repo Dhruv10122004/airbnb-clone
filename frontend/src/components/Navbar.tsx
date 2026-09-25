@@ -2,27 +2,27 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Globe, Menu, User as UserIcon, HelpCircle, Compass, Home, Sparkles, Building } from "lucide-react";
+import { Globe, Menu, User as UserIcon, HelpCircle, Compass, Home, Sparkles, Building2 } from "lucide-react";
 import { User } from "@/types";
-import { fetchCurrentUser } from "@/lib/api";
 
 interface NavbarProps {
   onOpenAuthModal: () => void;
+  onOpenCurrencyModal?: () => void;
   currentUser: User | null;
   onLogout: () => void;
-  centerContent?: React.ReactNode;
+  activeNavTab?: "all" | "homes" | "experiences" | "services";
+  onSelectNavTab?: (tab: "all" | "homes" | "experiences" | "services") => void;
 }
 
 export default function Navbar({
   onOpenAuthModal,
+  onOpenCurrencyModal,
   currentUser,
   onLogout,
-  centerContent,
+  activeNavTab = "homes",
+  onSelectNavTab,
 }: NavbarProps) {
-  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"homes" | "experiences" | "services" | "all">("homes");
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on click outside
@@ -35,6 +35,12 @@ export default function Navbar({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleTabClick = (tab: "all" | "homes" | "experiences" | "services") => {
+    if (onSelectNavTab) {
+      onSelectNavTab(tab);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[#EBEBEB] transition-all">
@@ -55,49 +61,57 @@ export default function Navbar({
           </span>
         </Link>
 
-        {/* Center: Homes / Experiences / Services tabs or Custom Search */}
-        {centerContent ? (
-          <div className="flex-1 max-w-2xl px-4">{centerContent}</div>
-        ) : (
-          <div className="hidden md:flex items-center gap-6">
-            <button
-              onClick={() => setActiveTab("all")}
-              className={`flex items-center gap-2 py-2 px-3 text-sm font-medium transition-colors ${
-                activeTab === "all" ? "text-black border-b-2 border-black" : "text-[#717171] hover:text-black"
-              }`}
-            >
-              <Compass className="w-5 h-5 text-amber-700" />
-              <span>All</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("homes")}
-              className={`flex items-center gap-2 py-2 px-3 text-sm font-semibold transition-colors ${
-                activeTab === "homes" ? "text-black border-b-2 border-black" : "text-[#717171] hover:text-black"
-              }`}
-            >
-              <Home className="w-5 h-5 text-emerald-700" />
-              <span>Homes</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("experiences")}
-              className={`flex items-center gap-2 py-2 px-3 text-sm font-medium transition-colors ${
-                activeTab === "experiences" ? "text-black border-b-2 border-black" : "text-[#717171] hover:text-black"
-              }`}
-            >
-              <Sparkles className="w-5 h-5 text-rose-500" />
-              <span>Experiences</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("services")}
-              className={`flex items-center gap-2 py-2 px-3 text-sm font-medium transition-colors ${
-                activeTab === "services" ? "text-black border-b-2 border-black" : "text-[#717171] hover:text-black"
-              }`}
-            >
-              <Building className="w-5 h-5 text-slate-700" />
-              <span>Services</span>
-            </button>
-          </div>
-        )}
+        {/* Center: Exact Tab Order & Styling from Recording */}
+        {/* All / Homes / Experiences / Services */}
+        <div className="hidden md:flex items-center gap-6">
+          <button
+            onClick={() => handleTabClick("all")}
+            className={`flex items-center gap-2 py-2 px-3 text-sm font-medium transition-colors cursor-pointer ${
+              activeNavTab === "all"
+                ? "text-black border-b-2 border-black font-semibold"
+                : "text-[#717171] hover:text-black"
+            }`}
+          >
+            <Compass className="w-5 h-5 text-amber-700" />
+            <span>All</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick("homes")}
+            className={`flex items-center gap-2 py-2 px-3 text-sm font-semibold transition-colors cursor-pointer ${
+              activeNavTab === "homes"
+                ? "text-black border-b-2 border-black"
+                : "text-[#717171] hover:text-black font-medium"
+            }`}
+          >
+            <Home className="w-5 h-5 text-emerald-700" />
+            <span>Homes</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick("experiences")}
+            className={`flex items-center gap-2 py-2 px-3 text-sm font-medium transition-colors cursor-pointer ${
+              activeNavTab === "experiences"
+                ? "text-black border-b-2 border-black font-semibold"
+                : "text-[#717171] hover:text-black"
+            }`}
+          >
+            <Sparkles className="w-5 h-5 text-rose-500" />
+            <span>Experiences</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick("services")}
+            className={`flex items-center gap-2 py-2 px-3 text-sm font-medium transition-colors cursor-pointer ${
+              activeNavTab === "services"
+                ? "text-black border-b-2 border-black font-semibold"
+                : "text-[#717171] hover:text-black"
+            }`}
+          >
+            <Building2 className="w-5 h-5 text-slate-700" />
+            <span>Services</span>
+          </button>
+        </div>
 
         {/* Right: Airbnb your home + Globe + Profile Menu */}
         <div className="flex items-center gap-1 sm:gap-2">
@@ -108,9 +122,11 @@ export default function Navbar({
             {currentUser?.role === "host" ? "Host Dashboard" : "Airbnb your home"}
           </Link>
 
+          {/* Globe Button (Triggers Currency Modal) */}
           <button
+            onClick={onOpenCurrencyModal}
             aria-label="Language & Currency"
-            className="p-2.5 rounded-full hover:bg-[#F7F7F7] text-[#222222] transition"
+            className="p-2.5 rounded-full hover:bg-[#F7F7F7] text-[#222222] transition cursor-pointer"
           >
             <Globe className="w-4 h-4" />
           </button>
@@ -135,7 +151,7 @@ export default function Navbar({
               )}
             </button>
 
-            {/* Dropdown Menu (Exact Replica of Airbnb) */}
+            {/* Dropdown Menu (Exact Replica of Recording) */}
             {menuOpen && (
               <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.15)] border border-[#EBEBEB] py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
                 {currentUser ? (
@@ -193,7 +209,7 @@ export default function Navbar({
                     </button>
                   </>
                 ) : (
-                  // Logged Out Menu (Exact replica of user's screenshot)
+                  // Logged Out Menu (Exact replica of recording)
                   <>
                     <button
                       onClick={() => setMenuOpen(false)}
@@ -205,7 +221,7 @@ export default function Navbar({
 
                     <div className="h-[1px] bg-[#EBEBEB] my-1" />
 
-                    {/* Become a Host Card */}
+                    {/* Become a Host Card with Subtitle & Graphic */}
                     <Link
                       href="/host"
                       onClick={() => setMenuOpen(false)}
