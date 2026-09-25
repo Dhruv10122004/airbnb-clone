@@ -224,10 +224,10 @@ export default function Navbar({
               {/* User Avatar Initial (Lavender circle with 'D' or user initial, matching screenshot) */}
               <Link
                 href="/profile"
-                className="w-8 h-8 rounded-full bg-[#ECE9FE] text-[#5B4DF5] font-bold text-sm flex items-center justify-center hover:opacity-90 transition cursor-pointer flex-shrink-0 shadow-2xs"
+                className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-[#ECE9FE] text-[#5B4DF5] font-bold text-sm flex items-center justify-center hover:opacity-90 transition cursor-pointer flex-shrink-0 shadow-2xs"
                 title="View Profile"
               >
-                {currentUser.full_name ? currentUser.full_name.charAt(0).toUpperCase() : "D"}
+                {currentUser?.full_name ? currentUser.full_name.charAt(0).toUpperCase() : "D"}
               </Link>
             </>
           )}
@@ -237,7 +237,7 @@ export default function Navbar({
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Main navigation menu"
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-pointer ${
+              className={`w-9 h-9 min-w-[36px] min-h-[36px] rounded-full flex items-center justify-center transition cursor-pointer ${
                 currentUser
                   ? "bg-[#EFEFEF] hover:bg-[#E5E5E5] text-[#222222]"
                   : "border border-[#DDDDDD] hover:shadow-md bg-white text-[#222222]"
