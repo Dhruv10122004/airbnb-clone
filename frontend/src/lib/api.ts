@@ -201,6 +201,19 @@ export async function createHostListing(data: any): Promise<ListingDetail> {
   return res.json();
 }
 
+export async function updateHostListing(id: string, data: any): Promise<ListingDetail> {
+  const res = await fetch(`${API_BASE}/api/listings/${id}`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || "Failed to update listing");
+  }
+  return res.json();
+}
+
 export async function deleteHostListing(id: string): Promise<any> {
   const res = await fetch(`${API_BASE}/api/listings/${id}`, {
     method: "DELETE",
